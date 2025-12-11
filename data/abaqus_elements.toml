@@ -121,6 +121,30 @@ type = "Hex20"
 description = "20-node quadratic brick, reduced integration and hybrid. Combines computational efficiency of reduced integration with hybrid formulation for nearly incompressible materials."
 
 # =============================================================================
+# 3D MEMBRANE ELEMENTS - QUADRILATERAL
+# =============================================================================
+
+[M3D4]
+nodes = 9
+type = "Quad4"
+description = "4-node three-dimensional membrane linear element fully integrated"
+
+[M3D4R]
+nodes = 9
+type = "Quad4"
+description = "4-node three-dimensional membrane linear element reduced integration"
+
+[M3D9]
+nodes = 9
+type = "Quad9"
+description = "9-node three-dimensional membrane quadratic element fully integrated"
+
+[M3D9R]
+nodes = 9
+type = "Quad9"
+description = "9-node three-dimensional membrane quadratic element reduced integration"
+
+# =============================================================================
 # COHESIVE ELEMENTS
 # =============================================================================
 
@@ -302,6 +326,11 @@ description = "2-node linear 2D truss element. Models pin-jointed structures tha
 nodes = 2
 type = "Seg2"
 description = "2-node linear 3D truss element. Models pin-jointed spatial structures carrying only axial loads. No bending, torsion, or shear stiffness. Common in space frames and tower structures."
+
+[T3D3]
+nodes = 3
+type = "Seg3"
+description = "3-node quadratic 3D truss element. Models pin-jointed spatial structures carrying only axial loads. No bending, torsion, or shear stiffness. Common in space frames and tower structures."
 
 [B31]
 nodes = 2
