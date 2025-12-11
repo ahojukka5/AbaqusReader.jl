@@ -4,7 +4,7 @@
 using AbaqusReader: element_has_type, element_has_nodes, parse_abaqus,
     parse_section, abaqus_read_mesh
 
-datadir = first(splitext(basename(@__FILE__)))
+datadir = joinpath(@__DIR__, first(splitext(basename(@__FILE__))))
 
 @testset "parse beam.inp mesh" begin
     fn = joinpath(datadir, "beam.inp")
