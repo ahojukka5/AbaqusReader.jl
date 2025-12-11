@@ -4,6 +4,26 @@
 using AbaqusReader
 using Test
 
+# Helper function to capture exception message while suppressing error output
+function capture_exception_message(f)
+    # Suppress stderr to avoid printing error messages during tests
+    old_stderr = stderr
+    redirect_stderr(devnull)
+    try
+        try
+            f()
+            return nothing
+        catch e
+            return e isa ErrorException ? e.msg : nothing
+        finally
+            redirect_stderr(old_stderr)
+        end
+    catch
+        redirect_stderr(old_stderr)
+        rethrow()
+    end
+end
+
 @testset "Register element dynamically" begin
     # Test registering a new element type
     @testset "Basic registration" begin
@@ -51,17 +71,21 @@ using Test
         1, 1
         """
 
-        err = try
-            abaqus_parse_mesh(inp_content)
-            nothing
-        catch e
-            e
+        # Test that the correct exception is thrown (suppress error output)
+        old_stderr = stderr
+        redirect_stderr(devnull)
+        try
+            @test_throws ErrorException abaqus_parse_mesh(inp_content)
+        finally
+            redirect_stderr(old_stderr)
         end
-
-        @test err isa ErrorException
-        @test occursin("Unknown ABAQUS element type: UNKNOWN_ELEM_XYZ", err.msg)
-        @test occursin("register_element!", err.msg)
-        @test occursin("data/abaqus_elements.toml", err.msg)
+        
+        # Check the error message content
+        err_msg = capture_exception_message(() -> abaqus_parse_mesh(inp_content))
+        @test err_msg !== nothing
+        @test occursin("Unknown ABAQUS element type: UNKNOWN_ELEM_XYZ", err_msg)
+        @test occursin("register_element!", err_msg)
+        @test occursin("data/abaqus_elements.toml", err_msg)
     end
 
     @testset "Case insensitive registration" begin
