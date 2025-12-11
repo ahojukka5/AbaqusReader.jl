@@ -4,7 +4,7 @@
 using AbaqusReader: abaqus_read_model
 using AbaqusReader: parse_keyword
 
-datadir = first(splitext(basename(@__FILE__)))
+datadir = joinpath(@__DIR__, first(splitext(basename(@__FILE__))))
 
 @testset "parse abaqus inp file to AbaqusModel" begin
     fn = joinpath(datadir, "cube_tet4.inp")
