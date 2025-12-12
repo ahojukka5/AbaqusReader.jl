@@ -29,6 +29,9 @@ datadir = joinpath(@__DIR__, first(splitext(basename(@__FILE__))))
 
     load = step.boundary_conditions[2]
     @test load.data[1] == [:LOAD, :P, 1.00000]
+
+    @test length(model.mesh.element_codes) == length(model.mesh.elements)
+    @test model.mesh.element_codes[1] == :C3D4
 end
 
 @testset "parse keyword" begin
