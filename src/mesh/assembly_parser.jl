@@ -148,7 +148,8 @@ function parse_assembly_mesh(io::IO; verbose=true)
     node_offset = 0
     element_offset = 0
 
-    for (part_name, part_data) in result["parts"]
+    for part_name in sort(collect(keys(result["parts"])))
+        part_data = result["parts"][part_name]
         @debug "Flattening PART: $part_name ($(length(part_data["nodes"])) nodes, $(length(part_data["elements"])) elements)"
 
         # Merge nodes
@@ -176,6 +177,17 @@ function parse_assembly_mesh(io::IO; verbose=true)
             prefixed_name = "$(part_name).$(set_name)"
             adjusted_ids = [id + node_offset for id in node_ids]
             result["node_sets"][prefixed_name] = adjusted_ids
+        end
+
+        # Merge surface sets
+        for (surface_name, surface_pairs) in part_data["surface_sets"]
+            prefixed_name = "$(part_name).$(surface_name)"
+            adjusted_pairs = [(elid + element_offset, side) for (elid, side) in surface_pairs]
+            result["surface_sets"][prefixed_name] = adjusted_pairs
+
+            if haskey(part_data["surface_types"], surface_name)
+                result["surface_types"][prefixed_name] = part_data["surface_types"][surface_name]
+            end
         end
 
         # Update offsets for next part
