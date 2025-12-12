@@ -17,6 +17,8 @@ using Test
     4, 0.0, 1.0, 0.0
     *ELEMENT,TYPE=CPS4,ELSET=EPART1
     1, 1, 2, 3, 4
+    *SURFACE,TYPE=ELEMENT,NAME=LOADP1
+    1, S1
     *END PART
     *PART,NAME=PART2
     *NODE
@@ -26,6 +28,8 @@ using Test
     4, 2.0, 1.0, 0.0
     *ELEMENT,TYPE=CPS4,ELSET=EPART2
     1, 1, 2, 3, 4
+    *SURFACE,TYPE=ELEMENT,NAME=LOADP2
+    1, S1
     *END PART
     *ASSEMBLY,NAME=ASSEMBLY1
     *INSTANCE,NAME=INST1,PART=PART1
@@ -63,6 +67,14 @@ using Test
     # Check that element sets are prefixed with part name
     @test haskey(mesh["element_sets"], "PART1.EPART1")
     @test haskey(mesh["element_sets"], "PART2.EPART2")
+
+    # Check that surface sets are preserved and prefixed with part name
+    @test haskey(mesh["surface_sets"], "PART1.LOADP1")
+    @test haskey(mesh["surface_sets"], "PART2.LOADP2")
+    @test mesh["surface_sets"]["PART1.LOADP1"] == [(1, :S1)]
+    @test mesh["surface_sets"]["PART2.LOADP2"] == [(2, :S1)]  # element offset applied
+    @test mesh["surface_types"]["PART1.LOADP1"] == :ELEMENT
+    @test mesh["surface_types"]["PART2.LOADP2"] == :ELEMENT
 
     println("✓ PART/ASSEMBLY format mesh parsing works correctly")
 end
