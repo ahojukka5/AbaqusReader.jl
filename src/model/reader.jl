@@ -103,6 +103,7 @@ An `AbaqusReader.Model` object with fields:
   - `mesh.nodes`: Node coordinates
   - `mesh.elements`: Element connectivity
   - `mesh.element_types`: Element type mapping
+  - `mesh.element_codes`: Original ABAQUS element names (e.g., `:C3D8R`)
   - `mesh.node_sets`: Named node sets
   - `mesh.element_sets`: Named element sets
   - `mesh.surface_sets`: Surface definitions
