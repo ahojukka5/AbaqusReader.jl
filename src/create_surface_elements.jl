@@ -8,6 +8,7 @@ This mapping table contains information what node ids locally match
 each side of element.
 """
 const element_mapping = Dict(
+    # Tetrahedra
     :Tet4 => Dict(
         :S1 => (:Tri3, [1, 3, 2]),
         :S2 => (:Tri3, [1, 2, 4]),
@@ -18,13 +19,50 @@ const element_mapping = Dict(
         :S2 => (:Tri6, [1, 2, 4, 5, 9, 8]),
         :S3 => (:Tri6, [2, 3, 4, 6, 10, 9]),
         :S4 => (:Tri6, [1, 4, 3, 8, 10, 7])),
+
+    # Hexahedra
     :Hex8 => Dict(
         :S1 => (:Quad4, [1, 2, 3, 4]),
         :S2 => (:Quad4, [5, 8, 7, 6]),
         :S3 => (:Quad4, [1, 5, 6, 2]),
         :S4 => (:Quad4, [2, 6, 7, 3]),
         :S5 => (:Quad4, [3, 7, 8, 4]),
-        :S6 => (:Quad4, [4, 8, 5, 1])))
+        :S6 => (:Quad4, [4, 8, 5, 1])),
+    :Hex20 => Dict(
+        :S1 => (:Quad8, [1, 2, 3, 4, 9, 10, 11, 12]),
+        :S2 => (:Quad8, [5, 8, 7, 6, 16, 15, 14, 13]),
+        :S3 => (:Quad8, [1, 5, 6, 2, 17, 13, 18, 9]),
+        :S4 => (:Quad8, [2, 6, 7, 3, 18, 14, 19, 10]),
+        :S5 => (:Quad8, [3, 7, 8, 4, 19, 15, 20, 11]),
+        :S6 => (:Quad8, [4, 8, 5, 1, 20, 16, 17, 12])),
+
+    # Wedges / prisms
+    :Wedge6 => Dict(
+        :S1 => (:Quad4, [1, 4, 5, 2]),
+        :S2 => (:Quad4, [2, 5, 6, 3]),
+        :S3 => (:Quad4, [3, 6, 4, 1]),
+        :S4 => (:Tri3, [1, 2, 3]),
+        :S5 => (:Tri3, [4, 6, 5])),
+    :Wedge15 => Dict(
+        :S1 => (:Quad8, [1, 4, 5, 2, 10, 11, 12, 8]),
+        :S2 => (:Quad8, [2, 5, 6, 3, 12, 13, 14, 9]),
+        :S3 => (:Quad8, [3, 6, 4, 1, 14, 15, 10, 7]),
+        :S4 => (:Tri6, [1, 2, 3, 8, 9, 7]),
+        :S5 => (:Tri6, [4, 6, 5, 15, 13, 11])),
+
+    # Shells (tri/quads) for completeness in surface extraction
+    :Tri3 => Dict(:S1 => (:Seg2, [1, 2]), :S2 => (:Seg2, [2, 3]), :S3 => (:Seg2, [3, 1])),
+    :Tri6 => Dict(:S1 => (:Seg3, [1, 2, 4]), :S2 => (:Seg3, [2, 3, 5]), :S3 => (:Seg3, [3, 1, 6])),
+    :Quad4 => Dict(
+        :S1 => (:Seg2, [1, 2]),
+        :S2 => (:Seg2, [2, 3]),
+        :S3 => (:Seg2, [3, 4]),
+        :S4 => (:Seg2, [4, 1])),
+    :Quad8 => Dict(
+        :S1 => (:Seg3, [1, 2, 5]),
+        :S2 => (:Seg3, [2, 3, 6]),
+        :S3 => (:Seg3, [3, 4, 7]),
+        :S4 => (:Seg3, [4, 1, 8])))
 
 """ Given element code, element side and global connectivity, determine boundary
 element. E.g. for Tet4 we have 4 sides S1..S4 and boundary element is of type Tri3.
