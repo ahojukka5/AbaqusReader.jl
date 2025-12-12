@@ -21,6 +21,7 @@ Container for mesh geometry and topology.
 - `node_sets::Dict{String,Vector{Int}}` - Node set name → node IDs
 - `elements::Dict{Int,Vector{Int}}` - Element ID → connectivity
 - `element_types::Dict{Int,Symbol}` - Element ID → element type
+- `element_codes::Dict{Int,Symbol}` - Element ID → original ABAQUS element code
 - `element_sets::Dict{String,Vector{Int}}` - Element set name → element IDs
 - `surface_sets::Dict{String,Vector{Tuple{Int,Symbol}}}` - Surface name → (element, face) pairs
 - `surface_types::Dict{String,Symbol}` - Surface name → surface type
@@ -30,6 +31,7 @@ mutable struct Mesh
     node_sets::Dict{String,Vector{Int}}
     elements::Dict{Int,Vector{Int}}
     element_types::Dict{Int,Symbol}
+    element_codes::Dict{Int,Symbol}
     element_sets::Dict{String,Vector{Int}}
     surface_sets::Dict{String,Vector{Tuple{Int,Symbol}}}
     surface_types::Dict{String,Symbol}
@@ -42,7 +44,8 @@ Construct Mesh from dictionary (as returned by mesh parser).
 """
 function Mesh(d::Dict{String,Dict})
     return Mesh(d["nodes"], d["node_sets"], d["elements"],
-        d["element_types"], d["element_sets"],
+        d["element_types"], get(d, "element_codes", Dict{Int,Symbol}()),
+        d["element_sets"],
         d["surface_sets"], d["surface_types"])
 end
 
