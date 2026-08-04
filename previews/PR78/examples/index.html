@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Examples · AbaqusReader.jl</title><meta name="title" content="Examples · AbaqusReader.jl"/><meta property="og:title" content="Examples · AbaqusReader.jl"/><meta property="twitter:title" content="Examples · AbaqusReader.jl"/><meta name="description" content="Documentation for AbaqusReader.jl."/><meta property="og:description" content="Documentation for AbaqusReader.jl."/><meta property="twitter:description" content="Documentation for AbaqusReader.jl."/><meta property="og:url" content="https://ahojukka5.github.io/AbaqusReader.jl/examples/"/><meta property="twitter:url" content="https://ahojukka5.github.io/AbaqusReader.jl/examples/"/><link rel="canonical" href="https://ahojukka5.github.io/AbaqusReader.jl/examples/"/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script><link href="../assets/custom.css" rel="stylesheet" type="text/css"/></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">AbaqusReader.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../philosophy/">Philosophy</a></li><li><a class="tocitem" href="../lessons_learned/">Lessons Learned</a></li><li class="is-active"><a class="tocitem" href>Examples</a><ul class="internal"><li><a class="tocitem" href="#Example-1:-Reading-Just-the-Mesh"><span>Example 1: Reading Just the Mesh</span></a></li><li><a class="tocitem" href="#Example-2:-Reading-the-Complete-Model"><span>Example 2: Reading the Complete Model</span></a></li><li><a class="tocitem" href="#Example-3:-Extracting-Surface-Elements"><span>Example 3: Extracting Surface Elements</span></a></li><li><a class="tocitem" href="#Example-4:-Downloading-Test-Models"><span>Example 4: Downloading Test Models</span></a></li><li><a class="tocitem" href="#Example-5:-Mesh-Statistics-and-Quality-Checks"><span>Example 5: Mesh Statistics and Quality Checks</span></a></li><li><a class="tocitem" href="#Example-6:-Converting-to-Other-Formats"><span>Example 6: Converting to Other Formats</span></a></li><li><a class="tocitem" href="#Example-7:-Visualization-with-Makie.jl-(Conceptual)"><span>Example 7: Visualization with Makie.jl (Conceptual)</span></a></li><li><a class="tocitem" href="#Example-8:-Working-with-Surface-Definitions"><span>Example 8: Working with Surface Definitions</span></a></li><li><a class="tocitem" href="#Working-with-Specific-Element-Types"><span>Working with Specific Element Types</span></a></li><li><a class="tocitem" href="#Tips-and-Best-Practices"><span>Tips and Best Practices</span></a></li></ul></li><li><a class="tocitem" href="../elements/">Supported Elements</a></li><li><a class="tocitem" href="../element_database/">Element Database</a></li><li><a class="tocitem" href="../api/">API Reference</a></li><li><a class="tocitem" href="../contributing/">Contributing</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Examples</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Examples</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/ahojukka5/AbaqusReader.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/ahojukka5/AbaqusReader.jl/blob/master/docs/src/examples.md" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Examples"><a class="docs-heading-anchor" href="#Examples">Examples</a><a id="Examples-1"></a><a class="docs-heading-anchor-permalink" href="#Examples" title="Permalink"></a></h1><p>This page demonstrates the two main ways to use AbaqusReader.jl.</p><h2 id="Example-1:-Reading-Just-the-Mesh"><a class="docs-heading-anchor" href="#Example-1:-Reading-Just-the-Mesh">Example 1: Reading Just the Mesh</a><a id="Example-1:-Reading-Just-the-Mesh-1"></a><a class="docs-heading-anchor-permalink" href="#Example-1:-Reading-Just-the-Mesh" title="Permalink"></a></h2><p>The simplest use case - extract only geometry and topology for visualization or conversion:</p><pre><code class="language-julia hljs">using AbaqusReader
+
+# Read mesh data from an ABAQUS input file
+mesh = abaqus_read_mesh(&quot;my_model.inp&quot;)
+
+# mesh is a Dict with the following keys:
+# - &quot;nodes&quot;: Dict mapping node IDs to coordinates [x, y, z]
+# - &quot;elements&quot;: Dict mapping element IDs to connectivity arrays
+# - &quot;element_types&quot;: Dict mapping element IDs to element type symbols (topology)
+# - &quot;element_codes&quot;: Dict mapping element IDs to original ABAQUS element names
+# - &quot;node_sets&quot;: Dict mapping set names to arrays of node IDs
+# - &quot;element_sets&quot;: Dict mapping set names to arrays of element IDs
+# - &quot;surface_sets&quot;: Dict mapping surface names to arrays of (element_id, face_symbol) tuples
+# - &quot;surface_types&quot;: Dict mapping surface names to surface type (e.g., :ELEMENT)
+
+# Access node coordinates
+node_1_coords = mesh[&quot;nodes&quot;][1]  # [x, y, z]
+
+# Access all nodes in a node set
+sym_nodes = mesh[&quot;node_sets&quot;][&quot;SYMMETRY&quot;]
+
+# Access elements in an element set
+volume_elements = mesh[&quot;element_sets&quot;][&quot;PART1&quot;]
+
+# Get element connectivity
+element_1_nodes = mesh[&quot;elements&quot;][1]  # Array of node IDs
+
+# Get element type (topological type, e.g., Tri3, Quad4, Tet4, Hex8)
+element_1_type = mesh[&quot;element_types&quot;][1]  # e.g., :Tet4, :Hex8
+
+# Get original ABAQUS element code (e.g., CPS3, CPE3, C3D8R)
+element_1_code = mesh[&quot;element_codes&quot;][1]  # e.g., :CPS3, :C3D8R
+
+# Use element codes to determine physics formulation if needed
+if mesh[&quot;element_codes&quot;][1] == :CPS3
+    println(&quot;Element 1 is plane stress&quot;)
+elseif mesh[&quot;element_codes&quot;][1] == :CPE3
+    println(&quot;Element 1 is plane strain&quot;)
+elseif mesh[&quot;element_codes&quot;][1] == :CAX3
+    println(&quot;Element 1 is axisymmetric&quot;)
+end</code></pre><h3 id="Use-Cases-for-Mesh-Only-Parsing"><a class="docs-heading-anchor" href="#Use-Cases-for-Mesh-Only-Parsing">Use Cases for Mesh-Only Parsing</a><a id="Use-Cases-for-Mesh-Only-Parsing-1"></a><a class="docs-heading-anchor-permalink" href="#Use-Cases-for-Mesh-Only-Parsing" title="Permalink"></a></h3><ul><li><strong>Mesh visualization</strong>: Extract geometry for plotting with Makie.jl, Plots.jl, or external tools</li><li><strong>Format conversion</strong>: Convert ABAQUS meshes to other FEM formats</li><li><strong>Custom FEM</strong>: Build your own finite element implementation on ABAQUS geometries</li><li><strong>Mesh inspection</strong>: Quickly check mesh quality, element counts, node sets</li></ul><h2 id="Example-2:-Reading-the-Complete-Model"><a class="docs-heading-anchor" href="#Example-2:-Reading-the-Complete-Model">Example 2: Reading the Complete Model</a><a id="Example-2:-Reading-the-Complete-Model-1"></a><a class="docs-heading-anchor-permalink" href="#Example-2:-Reading-the-Complete-Model" title="Permalink"></a></h2><p>When you need to reproduce the entire simulation, not just the geometry:</p><pre><code class="language-julia hljs">using AbaqusReader
+
+# Read the complete model definition
+model = abaqus_read_model(&quot;simulation.inp&quot;)
+
+# model is an AbaqusReader.Model instance with fields:
+# - mesh: Dict (same as returned by abaqus_read_mesh)
+# - materials: Dict mapping material names to Material structs
+# - properties: Dict of section properties
+# - boundary_conditions: Array of BoundaryCondition structs
+# - steps: Array of Step structs defining the analysis sequence
+
+# Access the mesh (same as mesh-only parsing)
+nodes = model.mesh[&quot;nodes&quot;]
+elements = model.mesh[&quot;elements&quot;]
+
+# Access material definitions
+steel = model.materials[&quot;STEEL&quot;]
+# Materials contain properties like:
+# - elastic: Young&#39;s modulus, Poisson&#39;s ratio
+# - density: Material density
+# - plastic: Yield stress, plastic strain curves
+
+# Access boundary conditions
+for bc in model.boundary_conditions
+    println(&quot;BC on set: $(bc.set_name)&quot;)
+    println(&quot;  DOF: $(bc.dof)&quot;)
+    println(&quot;  Value: $(bc.value)&quot;)
+end
+
+# Access analysis steps
+for step in model.steps
+    println(&quot;Step: $(step.name)&quot;)
+    println(&quot;  Type: $(step.type)&quot;)
+    # Steps contain loads, BCs, and output requests specific to that step
+end</code></pre><h3 id="Use-Cases-for-Complete-Model-Parsing"><a class="docs-heading-anchor" href="#Use-Cases-for-Complete-Model-Parsing">Use Cases for Complete Model Parsing</a><a id="Use-Cases-for-Complete-Model-Parsing-1"></a><a class="docs-heading-anchor-permalink" href="#Use-Cases-for-Complete-Model-Parsing" title="Permalink"></a></h3><ul><li><strong>Simulation reproduction</strong>: Extract all parameters to reproduce analysis in another solver</li><li><strong>Model verification</strong>: Programmatically check material properties, BCs, and loads</li><li><strong>Parameter studies</strong>: Extract and modify simulation parameters for batch studies</li><li><strong>Documentation</strong>: Auto-generate simulation documentation from .inp files</li><li><strong>Solver development</strong>: Use complete ABAQUS models as test cases for custom solvers</li></ul><h2 id="Example-3:-Extracting-Surface-Elements"><a class="docs-heading-anchor" href="#Example-3:-Extracting-Surface-Elements">Example 3: Extracting Surface Elements</a><a id="Example-3:-Extracting-Surface-Elements-1"></a><a class="docs-heading-anchor-permalink" href="#Example-3:-Extracting-Surface-Elements" title="Permalink"></a></h2><p>Create explicit surface elements from volume element faces:</p><pre><code class="language-julia hljs">using AbaqusReader
+
+# Read mesh
+mesh = abaqus_read_mesh(&quot;model.inp&quot;)
+
+# Create surface elements for a named surface
+# This converts implicit surface definitions (element + face)
+# into explicit surface element connectivity
+surface_elements = create_surface_elements(mesh, &quot;LOAD_SURFACE&quot;)
+
+# Returns Dict with:
+# - element IDs as keys
+# - node connectivity arrays as values
+# Surface elements are numbered starting from max(element_ids) + 1
+
+# Example: Apply loads to surface nodes
+surface_nodes = Set()
+for (elem_id, connectivity) in surface_elements
+    union!(surface_nodes, connectivity)
+end
+println(&quot;Surface has $(length(surface_nodes)) unique nodes&quot;)</code></pre><h2 id="Example-4:-Downloading-Test-Models"><a class="docs-heading-anchor" href="#Example-4:-Downloading-Test-Models">Example 4: Downloading Test Models</a><a id="Example-4:-Downloading-Test-Models-1"></a><a class="docs-heading-anchor-permalink" href="#Example-4:-Downloading-Test-Models" title="Permalink"></a></h2><p>AbaqusReader includes a helper to download example ABAQUS models:</p><pre><code class="language-julia hljs">using AbaqusReader
+
+# Download an example model (downloads to current directory)
+filename = abaqus_download(&quot;piston_ring_2d&quot;)
+
+# Then read it
+mesh = abaqus_read_mesh(filename)
+
+# The file is now available locally for further analysis
+println(&quot;Downloaded: $filename&quot;)
+println(&quot;Nodes: &quot;, length(mesh[&quot;nodes&quot;]))
+println(&quot;Elements: &quot;, length(mesh[&quot;elements&quot;]))</code></pre><p>This is useful for:</p><ul><li>Testing your analysis pipeline</li><li>Learning the package with real models</li><li>Benchmarking performance</li><li>Creating reproducible examples</li></ul><h2 id="Example-5:-Mesh-Statistics-and-Quality-Checks"><a class="docs-heading-anchor" href="#Example-5:-Mesh-Statistics-and-Quality-Checks">Example 5: Mesh Statistics and Quality Checks</a><a id="Example-5:-Mesh-Statistics-and-Quality-Checks-1"></a><a class="docs-heading-anchor-permalink" href="#Example-5:-Mesh-Statistics-and-Quality-Checks" title="Permalink"></a></h2><p>Extract useful information about your mesh:</p><pre><code class="language-julia hljs">using AbaqusReader
+using Statistics
+
+mesh = abaqus_read_mesh(&quot;model.inp&quot;)
+
+# Count elements by type
+element_type_counts = Dict{Symbol, Int}()
+for elem_type in values(mesh[&quot;element_types&quot;])
+    element_type_counts[elem_type] = get(element_type_counts, elem_type, 0) + 1
+end
+
+println(&quot;Element type distribution:&quot;)
+for (etype, count) in element_type_counts
+    println(&quot;  $etype: $count elements&quot;)
+end
+
+# Node set statistics
+println(&quot;\nNode sets:&quot;)
+for (set_name, node_ids) in mesh[&quot;node_sets&quot;]
+    println(&quot;  $set_name: $(length(node_ids)) nodes&quot;)
+end
+
+# Element set statistics  
+println(&quot;\nElement sets:&quot;)
+for (set_name, elem_ids) in mesh[&quot;element_sets&quot;]
+    println(&quot;  $set_name: $(length(elem_ids)) elements&quot;)
+end
+
+# Calculate bounding box
+all_coords = collect(values(mesh[&quot;nodes&quot;]))
+x_coords = [c[1] for c in all_coords]
+y_coords = [c[2] for c in all_coords]
+z_coords = [c[3] for c in all_coords]
+
+println(&quot;\nBounding box:&quot;)
+println(&quot;  X: [$(minimum(x_coords)), $(maximum(x_coords))]&quot;)
+println(&quot;  Y: [$(minimum(y_coords)), $(maximum(y_coords))]&quot;)
+println(&quot;  Z: [$(minimum(z_coords)), $(maximum(z_coords))]&quot;)</code></pre><h2 id="Example-6:-Converting-to-Other-Formats"><a class="docs-heading-anchor" href="#Example-6:-Converting-to-Other-Formats">Example 6: Converting to Other Formats</a><a id="Example-6:-Converting-to-Other-Formats-1"></a><a class="docs-heading-anchor-permalink" href="#Example-6:-Converting-to-Other-Formats" title="Permalink"></a></h2><p>Export mesh data to different formats for use in other tools:</p><pre><code class="language-julia hljs">using AbaqusReader
+
+mesh = abaqus_read_mesh(&quot;model.inp&quot;)
+
+# Export to VTK format (pseudo-code - requires a VTK writer package)
+# using WriteVTK
+# vtk_grid(&quot;output&quot;, mesh[&quot;nodes&quot;], mesh[&quot;elements&quot;])
+
+# Export nodes to CSV
+using DelimitedFiles
+
+# Create node matrix [id, x, y, z]
+node_matrix = zeros(length(mesh[&quot;nodes&quot;]), 4)
+for (i, (node_id, coords)) in enumerate(sort(collect(mesh[&quot;nodes&quot;])))
+    node_matrix[i, :] = [node_id, coords...]
+end
+
+writedlm(&quot;nodes.csv&quot;, node_matrix, &#39;,&#39;)
+println(&quot;Exported $(size(node_matrix, 1)) nodes to nodes.csv&quot;)
+
+# Export element connectivity
+open(&quot;elements.csv&quot;, &quot;w&quot;) do io
+    println(io, &quot;element_id,type,connectivity...&quot;)
+    for (elem_id, connectivity) in sort(collect(mesh[&quot;elements&quot;]))
+        elem_type = mesh[&quot;element_types&quot;][elem_id]
+        println(io, &quot;$elem_id,$elem_type,$(join(connectivity, &#39;,&#39;))&quot;)
+    end
+end
+println(&quot;Exported $(length(mesh[&quot;elements&quot;])) elements to elements.csv&quot;)</code></pre><h2 id="Example-7:-Visualization-with-Makie.jl-(Conceptual)"><a class="docs-heading-anchor" href="#Example-7:-Visualization-with-Makie.jl-(Conceptual)">Example 7: Visualization with Makie.jl (Conceptual)</a><a id="Example-7:-Visualization-with-Makie.jl-(Conceptual)-1"></a><a class="docs-heading-anchor-permalink" href="#Example-7:-Visualization-with-Makie.jl-(Conceptual)" title="Permalink"></a></h2><p>While AbaqusReader doesn&#39;t include visualization, the mesh data can be easily visualized:</p><pre><code class="language-julia hljs">using AbaqusReader
+# using GLMakie  # Uncomment if you have Makie installed
+
+mesh = abaqus_read_mesh(&quot;model.inp&quot;)
+
+# Extract node coordinates as a matrix
+node_ids = sort(collect(keys(mesh[&quot;nodes&quot;])))
+coords = hcat([mesh[&quot;nodes&quot;][id] for id in node_ids]...)&#39;
+
+# For shell or 2D meshes, plot nodes
+# scatter3d(coords[:, 1], coords[:, 2], coords[:, 3], markersize=5)
+
+# For volume meshes, extract surface elements first
+# surface_elems = create_surface_elements(mesh, &quot;OUTER_SURFACE&quot;)
+# Then use a mesh plotting function
+
+# Alternatively, export to VTK and use ParaView for visualization</code></pre><p><strong>Tip:</strong> For serious visualization, consider exporting to VTK format and using ParaView, or use Julia packages like Makie.jl or PlotlyJS.jl for interactive 3D plots.</p><h2 id="Example-8:-Working-with-Surface-Definitions"><a class="docs-heading-anchor" href="#Example-8:-Working-with-Surface-Definitions">Example 8: Working with Surface Definitions</a><a id="Example-8:-Working-with-Surface-Definitions-1"></a><a class="docs-heading-anchor-permalink" href="#Example-8:-Working-with-Surface-Definitions" title="Permalink"></a></h2><p>Extract and manipulate surface definitions for boundary conditions or loads:</p><pre><code class="language-julia hljs">using AbaqusReader
+
+mesh = abaqus_read_mesh(&quot;model.inp&quot;)
+
+# Check what surfaces are defined
+println(&quot;Available surfaces:&quot;)
+for (surf_name, surf_def) in mesh[&quot;surface_sets&quot;]
+    println(&quot;  $surf_name: $(length(surf_def)) faces&quot;)
+    println(&quot;    Type: $(mesh[&quot;surface_types&quot;][surf_name])&quot;)
+end
+
+# Create explicit surface elements for a specific surface
+surface_name = &quot;LOAD_SURFACE&quot;
+surface_elements = create_surface_elements(mesh, surface_name)
+
+println(&quot;\nSurface &#39;$surface_name&#39; details:&quot;)
+println(&quot;  Number of surface elements: $(length(surface_elements))&quot;)
+
+# Extract all unique nodes on the surface
+surface_nodes = Set{Int}()
+for (elem_id, connectivity) in surface_elements
+    union!(surface_nodes, connectivity)
+end
+
+println(&quot;  Number of surface nodes: $(length(surface_nodes))&quot;)
+println(&quot;  Node IDs: $(sort(collect(surface_nodes)))&quot;)
+
+# Get coordinates of surface nodes
+surface_coords = [mesh[&quot;nodes&quot;][nid] for nid in sort(collect(surface_nodes))]
+println(&quot;  First surface node: $(surface_coords[1])&quot;)
+
+# This surface node information can be used to:
+# - Apply pressure loads
+# - Define contact surfaces
+# - Extract results at specific locations
+# - Create visualizations of boundaries</code></pre><h2 id="Working-with-Specific-Element-Types"><a class="docs-heading-anchor" href="#Working-with-Specific-Element-Types">Working with Specific Element Types</a><a id="Working-with-Specific-Element-Types-1"></a><a class="docs-heading-anchor-permalink" href="#Working-with-Specific-Element-Types" title="Permalink"></a></h2><p>The package automatically handles different ABAQUS element types:</p><pre><code class="language-julia hljs">mesh = abaqus_read_mesh(&quot;mixed_elements.inp&quot;)
+
+# Find all tetrahedral elements
+tet_elements = [id for (id, etype) in mesh[&quot;element_types&quot;] if etype == :Tet4]
+
+# Find all hexahedral elements  
+hex_elements = [id for (id, etype) in mesh[&quot;element_types&quot;] if etype == :Hex8]
+
+# Get connectivity for specific element type
+for elem_id in tet_elements
+    nodes = mesh[&quot;elements&quot;][elem_id]
+    @assert length(nodes) == 4  # Tet4 has 4 nodes
+end</code></pre><h2 id="Tips-and-Best-Practices"><a class="docs-heading-anchor" href="#Tips-and-Best-Practices">Tips and Best Practices</a><a id="Tips-and-Best-Practices-1"></a><a class="docs-heading-anchor-permalink" href="#Tips-and-Best-Practices" title="Permalink"></a></h2><h3 id="Quiet-Operation"><a class="docs-heading-anchor" href="#Quiet-Operation">Quiet Operation</a><a id="Quiet-Operation-1"></a><a class="docs-heading-anchor-permalink" href="#Quiet-Operation" title="Permalink"></a></h3><p>By default, AbaqusReader operates quietly. If you need debug output for troubleshooting:</p><pre><code class="language-julia hljs">using Logging
+
+with_logger(ConsoleLogger(stderr, Logging.Debug)) do
+    mesh = abaqus_read_mesh(&quot;model.inp&quot;)
+end</code></pre><h3 id="Large-Models"><a class="docs-heading-anchor" href="#Large-Models">Large Models</a><a id="Large-Models-1"></a><a class="docs-heading-anchor-permalink" href="#Large-Models" title="Permalink"></a></h3><p>For large models, mesh-only parsing is significantly faster than complete model parsing:</p><pre><code class="language-julia hljs"># Fast - only parses mesh sections
+@time mesh = abaqus_read_mesh(&quot;large_model.inp&quot;)
+
+# Slower - parses everything
+@time model = abaqus_read_model(&quot;large_model.inp&quot;)</code></pre><p>Choose the appropriate function for your needs to optimize performance.</p><h3 id="Flat-vs.-Structured-Input-Files"><a class="docs-heading-anchor" href="#Flat-vs.-Structured-Input-Files">Flat vs. Structured Input Files</a><a id="Flat-vs.-Structured-Input-Files-1"></a><a class="docs-heading-anchor-permalink" href="#Flat-vs.-Structured-Input-Files" title="Permalink"></a></h3><p>The package works best with &quot;flat&quot; ABAQUS input files where all definitions are in a single file. Structured files with multiple parts and assemblies may require consolidation first.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../lessons_learned/">« Lessons Learned</a><a class="docs-footer-nextpage" href="../elements/">Supported Elements »</a><div class="flexbox-break"></div><p class="footer-message">AbaqusReader.jl - Modern FEM mesh parser for Julia</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Tuesday 4 August 2026 16:03">Tuesday 4 August 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

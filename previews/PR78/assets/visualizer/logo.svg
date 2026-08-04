@@ -1,0 +1,56 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="100" cy="100" r="95" fill="none" stroke="#9558B2" stroke-width="2" opacity="0.2"/>
+  
+  <!-- 3D Cube Wireframe (Finite Element Mesh) -->
+  <g stroke-width="2.5" fill="none" stroke-linejoin="round">
+    <!-- Back face -->
+    <path d="M 60 70 L 120 50 L 140 90 L 80 110 Z" stroke="#9558B2" opacity="0.4"/>
+    
+    <!-- Front face -->
+    <path d="M 50 90 L 110 70 L 130 110 L 70 130 Z" stroke="#9558B2"/>
+    
+    <!-- Top face -->
+    <path d="M 60 70 L 120 50 L 110 70 L 50 90 Z" stroke="#9558B2" opacity="0.6"/>
+    
+    <!-- Connecting edges -->
+    <line x1="60" y1="70" x2="50" y2="90" stroke="#9558B2"/>
+    <line x1="120" y1="50" x2="110" y2="70" stroke="#9558B2"/>
+    <line x1="140" y1="90" x2="130" y2="110" stroke="#9558B2"/>
+    <line x1="80" y1="110" x2="70" y2="130" stroke="#9558B2"/>
+    
+    <!-- Internal mesh divisions -->
+    <line x1="85" y1="80" x2="85" y2="100" stroke="#9558B2" opacity="0.5" stroke-width="1.5"/>
+    <line x1="50" y1="90" x2="80" y2="110" stroke="#9558B2" opacity="0.3" stroke-width="1.5"/>
+    <line x1="110" y1="70" x2="70" y2="130" stroke="#9558B2" opacity="0.3" stroke-width="1.5"/>
+  </g>
+  
+  <!-- Julia Dots as FEM Nodes -->
+  <!-- Purple dot (top-back) -->
+  <circle cx="120" cy="50" r="8" fill="#9558B2">
+    <animate attributeName="opacity" values="1;0.7;1" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Red dot (right-front) -->
+  <circle cx="130" cy="110" r="8" fill="#CB3C33">
+    <animate attributeName="opacity" values="1;0.7;1" dur="2s" begin="0.66s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Green dot (left-front) -->
+  <circle cx="50" cy="90" r="8" fill="#389826">
+    <animate attributeName="opacity" values="1;0.7;1" dur="2s" begin="1.33s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Smaller node points -->
+  <circle cx="60" cy="70" r="4" fill="#9558B2" opacity="0.8"/>
+  <circle cx="140" cy="90" r="4" fill="#CB3C33" opacity="0.8"/>
+  <circle cx="80" cy="110" r="4" fill="#389826" opacity="0.8"/>
+  <circle cx="110" cy="70" r="4" fill="#9558B2" opacity="0.6"/>
+  <circle cx="70" cy="130" r="4" fill="#CB3C33" opacity="0.6"/>
+  
+  <!-- Text -->
+  <text x="100" y="170" font-family="Arial, sans-serif" font-size="16" font-weight="bold" 
+        text-anchor="middle" fill="#9558B2">AbaqusReader.jl</text>
+  <text x="100" y="186" font-family="Arial, sans-serif" font-size="11" 
+        text-anchor="middle" fill="#666">Online Visualizer</text>
+</svg>
