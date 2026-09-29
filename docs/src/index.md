@@ -72,7 +72,7 @@ Returns a structured `Model` object containing:
 
 ## Important Notes
 
-- **File Format**: Both functions work best with "flat" ABAQUS input files. Structured formats (parts, assemblies) may have limited support.
+- **File Format**: `abaqus_read_mesh` flattens `*PART`, `*INSTANCE`, and `*ASSEMBLY` files. It applies each instance translation and rotation, including several instances of one part, and prefixes flattened set and surface names with the instance name. `abaqus_read_model` still expects a flat file.
 
 - **Keyword Coverage**: `abaqus_read_model()` handles common ABAQUS keywords but doesn't cover every possible option. It's designed for typical simulation extraction use cases.
 

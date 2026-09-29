@@ -156,7 +156,7 @@ end
 - Slower than `abaqus_read_mesh` as it parses the entire model
 - Returns structured `Model` object (not a simple Dict)
 - Parses most common ABAQUS keywords but not every possible option
-- Best suited for "flat" input files; structured part/assembly files may have limited support
+- Expects a flat input file. Assembly flattening is done by `abaqus_read_mesh`
 - Use when you need materials, BCs, loads, or analysis parameters
 """
 function abaqus_read_model(fn::String)
