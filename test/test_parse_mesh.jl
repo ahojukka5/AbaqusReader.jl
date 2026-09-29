@@ -131,6 +131,45 @@ end
     @test mesh["node_sets"]["testgen"] == [7, 9, 11, 13]
 end
 
+@testset "GENERATE is a parameter anywhere on the keyword line" begin
+    data = """
+*NSET, NSET=FOO, GENERATE, UNSORTED
+1, 100, 1
+"""
+    fn = tempname() * ".inp"
+    open(fn, "w") do fid
+        write(fid, data)
+    end
+    mesh = open(parse_abaqus, fn)
+    @test mesh["node_sets"]["FOO"] == collect(1:100)
+end
+
+@testset "GENERATE defaults a missing increment" begin
+    data = """
+*ELSET, ELSET=BAR, UNSORTED, GENERATE
+1, 10
+"""
+    fn = tempname() * ".inp"
+    open(fn, "w") do fid
+        write(fid, data)
+    end
+    mesh = open(parse_abaqus, fn)
+    @test mesh["element_sets"]["BAR"] == collect(1:10)
+end
+
+@testset "GENERATE keeps a negative increment" begin
+    data = """
+*NSET, NSET=REV, GENERATE
+10, 1, -1
+"""
+    fn = tempname() * ".inp"
+    open(fn, "w") do fid
+        write(fid, data)
+    end
+    mesh = open(parse_abaqus, fn)
+    @test mesh["node_sets"]["REV"] == collect(10:-1:1)
+end
+
 @testset "parse ELSET" begin
     lines = ["*ELSET, ELSET=TEST1", "1"]
     mesh = Dict("element_sets" => Dict{String,Vector{Int}}())

@@ -44,7 +44,7 @@ end
 Parse all the numbers from a string and convert to specified type.
 """
 function parse_numbers(line, type_::Type{T})::Vector{T} where {T}
-    regexp = r"[0-9]+"
+    regexp = r"-?[0-9]+"
     matches = (m.match for m in eachmatch(regexp, line))
     return map(x -> parse(type_, x), matches)
 end
