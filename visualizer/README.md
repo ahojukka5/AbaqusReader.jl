@@ -51,24 +51,13 @@ docker build -f Dockerfile.visualizer -t abaqus-visualizer .
 docker run -p 8080:8080 abaqus-visualizer
 ```
 
-Open http://localhost:3000 and start dropping files.
+Open http://localhost:8080/health to confirm the API is up. The container
+serves the parser, not the browser page.
 
-### Manual Setup (If You're Into That)
+### Local interface
 
-**Backend**:
-
-```bash
-cd backend
-julia --project=. -e 'using Pkg; Pkg.instantiate()'
-julia --project=. server.jl  # Runs on :8080
-```
-
-**Frontend**:
-
-```bash
-cd frontend
-python3 -m http.server 3000  # or any static server
-```
+`visualizer/dev.sh` starts `visualizer/src/AbaqusReaderAPI.jl` on port 8080
+and the static files in `visualizer/frontend/` on http://localhost:3000.
 
 ## API
 
@@ -98,7 +87,8 @@ The backend can run on any free-tier container hosting:
 
 Frontend goes straight to **GitHub Pages** because it's just static files.
 
-See the [Taiga wiki](https://tree.taiga.io/project/ahojukka5-abaqusreaderjl/wiki/online-visualizer) for detailed deployment instructions.
+Frontend files live in `visualizer/frontend/` and can be served as static files.
+The hosted backend is a separate deployment and is not documented here.
 
 ## Development
 

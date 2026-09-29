@@ -93,7 +93,7 @@ Add a test to `test/test_parse_mesh.jl` to verify the new element works:
     1, 1, 2, 3, 4, 5, 6, 7, 8
     """
     
-    mesh = abaqus_read_mesh(mesh_data, "YOUR_ELEMENT_test")
+    mesh = abaqus_parse_mesh(mesh_data)
     
     @test haskey(mesh, "elements")
     @test haskey(mesh, "element_types")
@@ -198,7 +198,7 @@ Test
 
 ```bash
 # Clone the repository
-git clone https://github.com/JuliaFEM/AbaqusReader.jl.git
+git clone https://github.com/ahojukka5/AbaqusReader.jl.git
 cd AbaqusReader.jl
 
 # Activate the project environment
@@ -264,7 +264,7 @@ When contributing, keep these principles in mind:
 
 ## Questions?
 
-- **Issues:** Open an issue on [GitHub](https://github.com/JuliaFEM/AbaqusReader.jl/issues)
+- **Issues:** Open an issue on [GitHub](https://github.com/ahojukka5/AbaqusReader.jl/issues)
 - **Discussions:** Use GitHub Discussions for questions and ideas
 - **Email:** Contact the maintainers for sensitive issues
 
