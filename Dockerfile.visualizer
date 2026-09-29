@@ -9,7 +9,7 @@ RUN apt-get update && \
 WORKDIR /app
 
 # Copy entire repository from build context root
-# Build this from repo root: docker build -f visualizer/Dockerfile -t abaqus-visualizer .
+# Build this from repo root: docker build -f Dockerfile.visualizer -t abaqus-visualizer .
 COPY . /app/AbaqusReader.jl
 
 WORKDIR /app/AbaqusReader.jl

@@ -39,16 +39,11 @@ AbaqusReader.jl is designed around **two distinct use cases** that should never 
 - Internal refactoring is encouraged as long as tests pass
 
 ### Code Organization
-- **Element type information**: Single dictionary in `parse_mesh.jl` (ELEMENT_INFO)
-- **Keyword handling**: Direct dispatch in `parse_model.jl`, no complex registration
+- **Element type information**: `data/abaqus_elements.toml`, loaded by `src/mesh/element_database.jl`
+- **Keyword handling**: Handlers in `src/model/`, no complex registration
 - **Each function does one thing**: Parse one section type, handle one keyword
 
 ## What to Keep in Mind
-
-### When Adding New Element Types
-1. Add one line to `ELEMENT_INFO` dictionary in `parse_mesh.jl`
-2. Map ABAQUS element name → (num_nodes, generic_type)
-3. That's it. No need for multiple functions.
 
 ### When Adding New Element Types
 1. **Don't edit code** - add to `data/abaqus_elements.toml` instead
@@ -60,17 +55,16 @@ AbaqusReader.jl is designed around **two distinct use cases** that should never 
    type = "<GenericType>"
    description = "<optional>"
    ```
-4. Add test in `test/test_parse_mesh.jl` to verify it works
+4. Add a test in `test/test_parse_mesh.jl`
 5. Element is automatically available - no code changes needed!
 
 ### When Adding New Keywords
-1. Add to `RECOGNIZED_KEYWORDS` Set in `parse_model.jl`
-2. Add handler in `maybe_open_section!` or `maybe_close_section!`
-3. Create specific handler function like `open_material!` or `close_elastic!`
-4. Keep it straightforward - no Val dispatch needed
+1. Add to `RECOGNIZED_KEYWORDS` in `src/model/keywords.jl`
+2. Add a handler next to the other keyword handlers in `src/model/`
+3. Keep it straightforward - no Val dispatch needed
 
 ### When Refactoring
-- **Run tests frequently**: All 96 tests must pass
+- **Run the test suite**: `julia --project=. -e 'using Pkg; Pkg.test()'`
 - **Check both APIs**: Test both `abaqus_read_mesh` and `abaqus_read_model`
 - **Preserve return types**: Dict structure for mesh, Model object for complete
 - **Commit atomically**: One logical change per commit with clear messages
@@ -82,31 +76,30 @@ AbaqusReader.jl is designed around **two distinct use cases** that should never 
 - ❌ Don't conflate mesh parsing with model parsing
 - ❌ Don't import Base methods without proper extensions
 - ❌ Don't sacrifice clarity for minor performance gains in parsing code
-- ❌ Don't hardcode element types in parse_mesh.jl - use the TOML database
+- ❌ Don't hardcode element types in `src/mesh/` - use the TOML database
 
 ## File Responsibilities
 
-- **`data/abaqus_elements.toml`**: Element type database - easy to extend without code changes
-- **`src/mesh/element_database.jl`**: Loads element database from TOML
-- **`src/mesh/parsers.jl`**: Mesh-only parsing, simple Dict returns
-- **`parse_model.jl`**: Complete model parsing, type definitions, structured Model returns
-- **`create_surface_elements.jl`**: Extract boundary faces from volume elements
-- **`abaqus_download.jl`**: Download example files from remote sources
-- **`AbaqusReader.jl`**: Main module, exports public API
-- **`ELEMENT_DATABASE.md`**: Documentation for adding new element types
+- **`data/abaqus_elements.toml`**: Element type database
+- **`src/mesh/`**: Mesh-only parsing. `element_database.jl` loads the TOML file
+- **`src/model/`**: Complete model parsing
+- **`src/create_surface_elements.jl`**: Extract boundary faces from volume elements
+- **`src/abaqus_download.jl`**: Download example files from remote sources
+- **`src/AbaqusReader.jl`**: Main module, exports public API
+- **`docs/src/element_database.md`**: Documentation for adding new element types
 
 ## Testing Philosophy
 
 - Tests are in `/test` directory
 - All changes must pass: `julia --project=. -e 'using Pkg; Pkg.test()'`
-- 96 tests cover both parsing modes and various element types
+- The test suite covers both parsing modes and various element types
 - Don't break backward compatibility - tests verify the API contract
 
 ## Common Patterns
 
 ### Parsing a New Section Type
 ```julia
-# In parse_mesh.jl or parse_model.jl
+# In src/mesh/ or src/model/
 function parse_section(model, lines, ::Symbol, idx_start, idx_end, ::Type{Val{:NEWSECTION}})
     # Parse lines between idx_start and idx_end
     # Update model dictionary/object
@@ -116,7 +109,7 @@ end
 
 ### Adding Keywords (parse_model.jl only)
 ```julia
-# 1. Add to RECOGNIZED_KEYWORDS
+# 1. Add to RECOGNIZED_KEYWORDS in src/model/keywords.jl
 const RECOGNIZED_KEYWORDS = Set([
     "EXISTING", "KEYWORDS", ...,
     "NEW KEYWORD"

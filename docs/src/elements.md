@@ -70,7 +70,7 @@ For structures where stress in one direction is negligible (thin plates loaded i
 
 | ABAQUS Element | Nodes | Generic Type | Description |
 |----------------|:-----:|--------------|-------------|
-| **CPS3** | 3 | `:CPS3` | 3-node linear plane stress triangle. **Avoid except as filler** - constant stress element, very fine mesh needed. Use CPS6 or quads. |
+| **CPS3** | 3 | `:Tri3` | 3-node linear plane stress triangle. **Avoid except as filler** - constant stress element, very fine mesh needed. Use CPS6 or quads. |
 | **CPS4** | 4 | `:Quad4` | 4-node bilinear plane stress quadrilateral, full integration. Does not lock for nearly incompressible materials. |
 | **CPS4R** | 4 | `:Quad4` | 4-node plane stress quad, reduced integration with hourglass control. **Recommended for most plane stress analyses** - computationally efficient. |
 | **CPS4I** | 4 | `:Quad4` | 4-node plane stress quad with incompatible modes. Enhanced for bending. Best with rectangular element shapes. |
