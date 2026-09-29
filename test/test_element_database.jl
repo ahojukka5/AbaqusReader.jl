@@ -34,6 +34,10 @@ using AbaqusReader: load_element_database, element_has_nodes, element_has_type, 
         @test element_has_nodes(:S3) == 3
         @test element_has_nodes(:S4) == 4
 
+        # Membrane elements
+        @test element_has_nodes(:M3D4) == 4
+        @test element_has_nodes(:M3D4R) == 4
+
         # Beam/truss elements
         @test element_has_nodes(:T2D2) == 2
         @test element_has_nodes(:B31) == 2
@@ -56,6 +60,10 @@ using AbaqusReader: load_element_database, element_has_nodes, element_has_type, 
         # Shell elements
         @test element_has_type(:S3) == :Tri3
         @test element_has_type(:S4) == :Quad4
+
+        # Membrane elements
+        @test element_has_type(:M3D4) == :Quad4
+        @test element_has_type(:M3D4R) == :Quad4
 
         # Beam/truss elements
         @test element_has_type(:T2D2) == :Seg2

@@ -2,7 +2,7 @@
 # License is MIT: see https://github.com/JuliaFEM/AbaqusReader.jl/blob/master/LICENSE
 
 using AbaqusReader: element_has_type, element_has_nodes, parse_abaqus,
-    parse_section, abaqus_read_mesh
+    parse_section, abaqus_read_mesh, abaqus_parse_mesh
 
 datadir = joinpath(@__DIR__, first(splitext(basename(@__FILE__))))
 
@@ -189,4 +189,16 @@ end
     @test model["element_types"][1] == :Poi1
     @test model["elements"][1] == [100]
     @test length(model["elements"][1]) == 1
+end
+
+@testset "M3D4 stays a 4-node quadrilateral" begin
+    mesh = abaqus_parse_mesh("""
+    *ELEMENT, TYPE=M3D4
+    1, 1, 2, 3, 4
+    2, 5, 6, 7, 8
+    """)
+    @test mesh["elements"][1] == [1, 2, 3, 4]
+    @test mesh["elements"][2] == [5, 6, 7, 8]
+    @test mesh["element_types"][1] == :Quad4
+    @test mesh["element_codes"][1] == :M3D4
 end
