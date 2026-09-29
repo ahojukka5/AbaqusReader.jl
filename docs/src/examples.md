@@ -360,7 +360,10 @@ For large models, mesh-only parsing is significantly faster than complete model 
 
 Choose the appropriate function for your needs to optimize performance.
 
-### Flat vs. Structured Input Files
+### Assemblies
 
-The package works best with "flat" ABAQUS input files where all definitions are in a single file.
-Structured files with multiple parts and assemblies may require consolidation first.
+`abaqus_read_mesh` reads `*PART`, `*INSTANCE`, and `*ASSEMBLY` input and
+returns one mesh. Instance translation and rotation are applied, and the same
+part may be placed more than once. Set and surface names on the flattened
+mesh are prefixed with the instance name. `abaqus_read_model` does not
+flatten assemblies.
