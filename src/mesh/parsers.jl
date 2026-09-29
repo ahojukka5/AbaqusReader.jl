@@ -267,6 +267,10 @@ function parse_abaqus(fid::IO, verbose::Bool=true)
                 parse_section(model, lines, k_sym, idx_start, idx_end - 1, Val{:ELSET})
             elseif k_sym == :SURFACE
                 parse_section(model, lines, k_sym, idx_start, idx_end - 1, Val{:SURFACE})
+            elseif k_sym == :INCLUDE
+                throw(ArgumentError(
+                    "*INCLUDE requires a file path; use abaqus_read_mesh",
+                ))
             elseif keyword in MODEL_ONLY_KEYWORDS
                 # Silently skip known model-only keywords
                 @debug "Skipping model-only keyword: $keyword"

@@ -38,6 +38,11 @@ mesh = abaqus_parse_mesh(inp_content)
 - [`abaqus_read_mesh`](@ref): Read mesh from file
 """
 function abaqus_parse_mesh(content::AbstractString; kwargs...)
+    for line in split(content, '\n')
+        include_keyword(line) && throw(ArgumentError(
+            "*INCLUDE requires a file path; use abaqus_read_mesh",
+        ))
+    end
     verbose = get(kwargs, :verbose, true)
 
     # Detect if this is a modern PART/ASSEMBLY format
@@ -110,8 +115,63 @@ boundary_nodes = mesh["node_sets"]["BOUNDARY"]
 - Much faster than `abaqus_read_model` when only mesh is needed
 - Element types are mapped to generic topology (e.g., `C3D8R` → `:Hex8`)
 - Original ABAQUS element names preserved in `element_codes` for traceability
+- `*INCLUDE, INPUT=` is read relative to the parent file, with a cycle guard and a nesting cap of 16
 """
+const INCLUDE_DEPTH_CAP = 16
+
+function include_keyword(line::AbstractString)
+    stripped = strip(line)
+    startswith(stripped, "**") && return false
+    upper = uppercase(stripped)
+    startswith(upper, "*INCLUDE") || return false
+    rest = chop(upper; head=length("*INCLUDE"), tail=0)
+    return isempty(rest) || startswith(rest, ",") || startswith(rest, " ")
+end
+
+function include_input_path(line::AbstractString)
+    match_result = match(r"INPUT\s*=\s*(?:\"([^\"]+)\"|([^,\s]+))"i, line)
+    match_result === nothing && throw(ArgumentError(
+        "*INCLUDE requires an INPUT parameter: $(strip(line))",
+    ))
+    path = match_result[1] !== nothing ? match_result[1] : match_result[2]
+    return String(path)
+end
+
+function expand_includes(
+    content::AbstractString,
+    directory::AbstractString,
+    stack::Set{String},
+    depth::Int,
+)
+    depth > INCLUDE_DEPTH_CAP && throw(ArgumentError(
+        "*INCLUDE nesting exceeds $INCLUDE_DEPTH_CAP",
+    ))
+    pieces = String[]
+    for line in split(content, '\n'; keepempty=true)
+        if !include_keyword(line)
+            push!(pieces, line)
+            continue
+        end
+        relative = include_input_path(line)
+        path = abspath(joinpath(directory, relative))
+        path in stack && throw(ArgumentError("*INCLUDE cycle at $path"))
+        isfile(path) || throw(ArgumentError("*INCLUDE file not found: $path"))
+        push!(stack, path)
+        expanded = expand_includes(
+            read(path, String),
+            dirname(path),
+            stack,
+            depth + 1,
+        )
+        pop!(stack, path)
+        push!(pieces, expanded)
+    end
+    return join(pieces, '\n')
+end
+
 function abaqus_read_mesh(fn::String; kwargs...)
-    content = read(fn, String)
-    return abaqus_parse_mesh(content; kwargs...)
+    path = abspath(fn)
+    content = read(path, String)
+    expanded = expand_includes(content, dirname(path), Set{String}([path]), 0)
+    return abaqus_parse_mesh(expanded; kwargs...)
 end

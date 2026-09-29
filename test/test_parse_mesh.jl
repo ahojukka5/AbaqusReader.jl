@@ -2,7 +2,7 @@
 # License is MIT: see https://github.com/JuliaFEM/AbaqusReader.jl/blob/master/LICENSE
 
 using AbaqusReader: element_has_type, element_has_nodes, parse_abaqus,
-    parse_section, abaqus_read_mesh
+    parse_section, abaqus_read_mesh, abaqus_parse_mesh
 
 datadir = joinpath(@__DIR__, first(splitext(basename(@__FILE__))))
 
@@ -189,4 +189,54 @@ end
     @test model["element_types"][1] == :Poi1
     @test model["elements"][1] == [100]
     @test length(model["elements"][1]) == 1
+end
+
+@testset "INCLUDE reads files next to the parent" begin
+    directory = mktempdir()
+    part = joinpath(directory, "part.inp")
+    parent = joinpath(directory, "model.inp")
+    write(part, """
+    *NODE
+    1, 0.0, 0.0, 0.0
+    2, 1.0, 0.0, 0.0
+    *ELEMENT, TYPE=T2D2
+    1, 1, 2
+    """)
+    write(parent, """
+    *HEADING
+    assembled model
+    *INCLUDE, INPUT=part.inp
+    *NSET, NSET=ALL
+    1, 2
+    """)
+    mesh = abaqus_read_mesh(parent)
+    @test mesh["nodes"][1] == [0.0, 0.0, 0.0]
+    @test mesh["elements"][1] == [1, 2]
+    @test mesh["element_types"][1] == :Seg2
+    @test mesh["node_sets"]["ALL"] == [1, 2]
+
+    nested = joinpath(directory, "nested.inp")
+    write(nested, "*INCLUDE, INPUT=part.inp\n")
+    write(parent, "*INCLUDE, INPUT=nested.inp\n")
+    nested_mesh = abaqus_read_mesh(parent)
+    @test nested_mesh["elements"][1] == [1, 2]
+
+    @test_throws ArgumentError abaqus_parse_mesh("*INCLUDE, INPUT=part.inp\n")
+
+    write(parent, "*INCLUDE, INPUT=missing.inp\n")
+    @test_throws ArgumentError abaqus_read_mesh(parent)
+
+    other = joinpath(directory, "other.inp")
+    write(parent, "*INCLUDE, INPUT=other.inp\n")
+    write(other, "*INCLUDE, INPUT=model.inp\n")
+    @test_throws ArgumentError abaqus_read_mesh(parent)
+
+    current = parent
+    for index in 1:AbaqusReader.INCLUDE_DEPTH_CAP
+        nxt = joinpath(directory, "level-$index.inp")
+        write(current, "*INCLUDE, INPUT=$(basename(nxt))\n")
+        current = nxt
+    end
+    write(current, "*INCLUDE, INPUT=part.inp\n")
+    @test_throws ArgumentError abaqus_read_mesh(parent)
 end
