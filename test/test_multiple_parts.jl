@@ -231,3 +231,67 @@ end
     """
     @test_throws ArgumentError abaqus_parse_mesh(zero_axis)
 end
+
+@testset "Assembly-level sets use remapped instance ids" begin
+    input = """
+    *PART, NAME=PART-1
+    *NODE
+    1, 0.0, 0.0, 0.0
+    2, 1.0, 0.0, 0.0
+    3, 1.0, 1.0, 0.0
+    4, 0.0, 1.0, 0.0
+    *NSET, NSET=CORNER
+    1
+    *ELEMENT, TYPE=CPS4
+    10, 1, 2, 3, 4
+    11, 1, 2, 3, 4
+    *END PART
+    *ASSEMBLY, NAME=Assembly1
+    *INSTANCE, NAME=A, PART=PART-1, NSET=A-NODES, ELSET=A-ELEMS
+    *END INSTANCE
+    *INSTANCE, NAME=B, PART=PART-1
+    10.0, 0.0, 0.0
+    *END INSTANCE
+    *NSET, NSET=FIXED, INSTANCE=A
+    1, 2, 3
+    *NSET, NSET=SPAN, GENERATE, UNSORTED, INSTANCE=A
+    1, 3
+    *ELSET, ELSET=LOADFACE, INSTANCE=B
+    10, 11
+    *ELSET, ELSET=REV, INSTANCE=A, GENERATE
+    11, 10, -1
+    *SURFACE, NAME=CONTACT, TYPE=ELEMENT
+    LOADFACE, S1
+    *NSET, NSET=COPIED
+    A.CORNER
+    *END ASSEMBLY
+    """
+    mesh = abaqus_parse_mesh(input)
+    @test mesh["node_sets"]["A-NODES"] == [1, 2, 3, 4]
+    @test mesh["element_sets"]["A-ELEMS"] == [10, 11]
+    @test mesh["node_sets"]["FIXED"] == [1, 2, 3]
+    @test mesh["node_sets"]["SPAN"] == [1, 2, 3]
+    @test mesh["element_sets"]["LOADFACE"] == [21, 22]
+    @test mesh["element_sets"]["REV"] == [11, 10]
+    @test mesh["surface_sets"]["CONTACT"] == [(21, :S1), (22, :S1)]
+    @test mesh["surface_types"]["CONTACT"] == :ELEMENT
+    @test mesh["node_sets"]["COPIED"] == [1]
+    @test mesh["node_sets"]["A.CORNER"] == [1]
+    @test mesh["nodes"][5] ≈ [10.0, 0.0, 0.0]
+
+    missing_node = """
+    *PART, NAME=PART-1
+    *NODE
+    1, 0.0, 0.0, 0.0
+    *ELEMENT, TYPE=DCOUP3D
+    1, 1
+    *END PART
+    *ASSEMBLY, NAME=Assembly1
+    *INSTANCE, NAME=A, PART=PART-1
+    *END INSTANCE
+    *NSET, NSET=FIXED, INSTANCE=A
+    99
+    *END ASSEMBLY
+    """
+    @test_throws ArgumentError abaqus_parse_mesh(missing_node)
+end
