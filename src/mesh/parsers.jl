@@ -130,9 +130,17 @@ function parse_section(model, lines, key, idx_start, idx_end, ::Union{Type{Val{:
 
     @debug "Creating $(lowercase(string(key))) $set_name"
 
-    if endswith(strip(uppercase(definition)), "GENERATE")
+    if any(token -> uppercase(strip(token)) == "GENERATE", split(definition, ','))
         line = lines[idx_start+1]
-        first_id, last_id, step_ = parse_numbers(line, Int)
+        numbers = parse_numbers(line, Int)
+        if length(numbers) == 2
+            first_id, last_id = numbers
+            step_ = 1
+        elseif length(numbers) == 3
+            first_id, last_id, step_ = numbers
+        else
+            error("GENERATE data line must contain 2 or 3 integers: $line")
+        end
         set_ids = collect(first_id:step_:last_id)
         push!(data, set_ids...)
     else
