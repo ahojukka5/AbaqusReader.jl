@@ -125,12 +125,12 @@ description = "20-node quadratic brick, reduced integration and hybrid. Combines
 # =============================================================================
 
 [M3D4]
-nodes = 9
+nodes = 4
 type = "Quad4"
 description = "4-node three-dimensional membrane linear element fully integrated"
 
 [M3D4R]
-nodes = 9
+nodes = 4
 type = "Quad4"
 description = "4-node three-dimensional membrane linear element reduced integration"
 
