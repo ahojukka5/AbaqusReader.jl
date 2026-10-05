@@ -29,8 +29,8 @@ using Test
     @testset "test_element_boundary" begin
         include("test_element_boundary.jl")
     end
-    @testset "test_boundary_surface" begin
-        include("test_boundary_surface.jl")
+    @testset "test_boundary_faces" begin
+        include("test_boundary_faces.jl")
     end
     @testset "test_download" begin
         include("test_download.jl")
