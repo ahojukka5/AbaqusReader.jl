@@ -26,6 +26,9 @@ using Test
     @testset "test_create_surface_elements" begin
         include("test_create_surface_elements.jl")
     end
+    @testset "test_element_boundary" begin
+        include("test_element_boundary.jl")
+    end
     @testset "test_download" begin
         include("test_download.jl")
     end
