@@ -162,3 +162,83 @@ function create_surface_elements(mesh::Dict, surface_name::String)
     end
     return result
 end
+
+function element_side_number(side::Symbol)
+    name = String(side)
+    startswith(name, "S") || error("element side $side has no side number")
+    return parse(Int, name[2:end])
+end
+
+function element_face_corner_count(face_type::Symbol)
+    if face_type === :Tri3 || face_type === :Tri6
+        return 3
+    elseif face_type === :Quad4 || face_type === :Quad8
+        return 4
+    else
+        error("element side type $face_type is not a triangle or quadrilateral")
+    end
+end
+
+"""
+    element_boundary(topology::Symbol)
+
+Corner-node boundary of one Abaqus topology, taken from the element side table.
+
+The result is a named tuple:
+
+- `kind`: `:volume_faces`, `:surface_face`, `:non_surface`, or `:unsupported`
+- `linearized`: `true` when midside or center nodes were dropped
+- `faces`: local corner indices. Volume faces follow Abaqus side order
+  (`S1`, `S2`, ...). A triangular or quadrilateral element returns one face,
+  which is not the edge list used by `create_surface_element`.
+
+`:Poi1`, `:Seg2`, and `:Seg3` are `:non_surface`. `:Quad9` is not in the side
+table; its corner face is nodes 1-4. Any other unknown topology is
+`:unsupported`.
+"""
+function element_boundary(topology::Symbol)
+    if topology === :Poi1 || topology === :Seg2 || topology === :Seg3
+        return (
+            kind=:non_surface,
+            linearized=false,
+            faces=Vector{Int}[],
+        )
+    end
+
+    if !haskey(element_mapping, topology)
+        if topology === :Quad9
+            return (
+                kind=:surface_face,
+                linearized=true,
+                faces=Vector{Int}[[1, 2, 3, 4]],
+            )
+        end
+        return (
+            kind=:unsupported,
+            linearized=false,
+            faces=Vector{Int}[],
+        )
+    end
+
+    sides = element_mapping[topology]
+    ordered = sort!(collect(keys(sides)); by=element_side_number)
+    child_types = [sides[side][1] for side in ordered]
+    if all(child -> child === :Seg2 || child === :Seg3, child_types)
+        corners = [sides[side][2][1] for side in ordered]
+        return (
+            kind=:surface_face,
+            linearized=any(child -> child === :Seg3, child_types),
+            faces=Vector{Int}[corners],
+        )
+    end
+
+    faces = Vector{Int}[]
+    linearized = false
+    for side in ordered
+        child_type, nodes = sides[side]
+        corner_count = element_face_corner_count(child_type)
+        corner_count < length(nodes) && (linearized = true)
+        push!(faces, nodes[1:corner_count])
+    end
+    return (kind=:volume_faces, linearized=linearized, faces=faces)
+end

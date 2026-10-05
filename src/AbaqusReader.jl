@@ -28,6 +28,7 @@ include("abaqus_download.jl")
 export abaqus_read_mesh, abaqus_parse_mesh
 export abaqus_read_model, abaqus_parse_model
 export create_surface_elements
+export element_boundary
 export abaqus_download
 export register_element!
 
