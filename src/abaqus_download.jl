@@ -1,13 +1,11 @@
-# This file is a part of JuliaFEM.
-# License is MIT: see https://github.com/JuliaFEM/AbaqusReader.jl/blob/master/LICENSE
-
 """
     abaqus_download(model_name, env=ENV; dryrun=false) -> String
 
 Download an ABAQUS example model from a remote repository.
 
-This utility function downloads example ABAQUS input files for testing and learning purposes.
-It requires environment variables to be set for specifying the download URL and destination.
+This helper is not exported. It is for tests and local examples that set
+`ABAQUS_DOWNLOAD_URL`. It is not part of the public parser API
+(`abaqus_read_mesh` / `abaqus_read_model`).
 
 # Arguments
 - `model_name`: Name of the model file to download (e.g., `"piston_ring_2d.inp"`)
@@ -30,13 +28,13 @@ It requires environment variables to be set for specifying the download URL and 
 
 # Examples
 ```julia
-using AbaqusReader
+using AbaqusReader: abaqus_download, abaqus_read_mesh
 
 # Set up environment variables
 ENV["ABAQUS_DOWNLOAD_URL"] = "https://example.com/abaqus/models"
 ENV["ABAQUS_DOWNLOAD_DIR"] = "/path/to/models"
 
-# Download a model
+# Download a model. The helper is not exported.
 filepath = abaqus_download("piston_ring_2d.inp")
 
 # Use the downloaded file

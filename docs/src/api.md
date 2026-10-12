@@ -13,7 +13,10 @@ AbaqusReader.jl exports the following main functions for working with ABAQUS inp
 - File-based API: `abaqus_read_mesh`, `abaqus_read_model` (read from .inp files)
 - String-based API: `abaqus_parse_mesh`, `abaqus_parse_model` (parse from string buffers)
 - Element registration: `register_element!` (add element types dynamically)
-- Utilities: `create_surface_elements`, `element_boundary`, `boundary_faces`, `abaqus_download`
+- Mesh utilities: `create_surface_elements`, `element_boundary`, `boundary_faces`
+
+`abaqus_download` is not exported. It remains an unexported helper for
+tests that set `ABAQUS_DOWNLOAD_URL`.
 
 ## Index
 
@@ -31,6 +34,5 @@ register_element!
 create_surface_elements
 element_boundary
 boundary_faces
-abaqus_download
 ```
 

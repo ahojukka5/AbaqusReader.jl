@@ -83,8 +83,8 @@ AbaqusReader.jl is designed around **two distinct use cases** that should never 
 - **`data/abaqus_elements.toml`**: Element type database
 - **`src/mesh/`**: Mesh-only parsing. `element_database.jl` loads the TOML file
 - **`src/model/`**: Complete model parsing
-- **`src/create_surface_elements.jl`**: Extract boundary faces from volume elements
-- **`src/abaqus_download.jl`**: Download example files from remote sources
+- **`src/mesh/create_surface_elements.jl`**: Extract boundary faces from volume elements
+- **`src/abaqus_download.jl`**: Unexported helper for tests that set `ABAQUS_DOWNLOAD_URL`. Not part of the public parser API
 - **`src/AbaqusReader.jl`**: Main module, exports public API
 - **`docs/src/element_database.md`**: Documentation for adding new element types
 

@@ -1,7 +1,4 @@
-# This file is a part of JuliaFEM.
-# License is MIT: see https://github.com/JuliaFEM/AbaqusReader.jl/blob/master/LICENSE
-
-using AbaqusReader
+using AbaqusReader: abaqus_download
 
 @testset "test abaqus_download" begin
     ENV_ = empty(ENV)

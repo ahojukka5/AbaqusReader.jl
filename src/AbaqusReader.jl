@@ -1,6 +1,3 @@
-# This file is a part of JuliaFEM.
-# License is MIT: see https://github.com/JuliaFEM/AbaqusReader.jl/blob/master/LICENSE
-
 module AbaqusReader
 
 using Logging
@@ -12,6 +9,7 @@ include("mesh/utilities.jl")
 include("mesh/parsers.jl")
 include("mesh/assembly_parser.jl")
 include("mesh/reader.jl")
+include("mesh/create_surface_elements.jl")
 
 # Model parsing module
 include("model/types.jl")
@@ -20,9 +18,8 @@ include("model/keywords.jl")
 include("model/sections.jl")
 include("model/reader.jl")
 
-# Utilities
-include("create_surface_elements.jl")
 include("boundary_faces.jl")
+# Not exported. Kept for tests that set ABAQUS_DOWNLOAD_URL.
 include("abaqus_download.jl")
 
 # Export public API
@@ -31,7 +28,6 @@ export abaqus_read_model, abaqus_parse_model
 export create_surface_elements
 export element_boundary
 export boundary_faces
-export abaqus_download
 export register_element!
 
 end
