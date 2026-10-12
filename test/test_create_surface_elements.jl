@@ -1,6 +1,3 @@
-# This file is a part of JuliaFEM.
-# License is MIT: see https://github.com/JuliaFEM/AbaqusReader.jl/blob/master/LICENSE
-
 using AbaqusReader: create_surface_element, create_surface_elements
 
 @testset "create surface element from voluminal element surface" begin

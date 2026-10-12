@@ -1,6 +1,3 @@
-# This file is a part of JuliaFEM.
-# License is MIT: see https://github.com/JuliaFEM/AbaqusReader.jl/blob/master/LICENSE
-
 function instance_data_lines(lines, first_line::Int, last_line::Int)
     data = String[]
     for index in first_line:last_line

@@ -1,6 +1,3 @@
-# This file is a part of JuliaFEM.
-# License is MIT: see https://github.com/JuliaFEM/AbaqusReader.jl/blob/master/LICENSE
-
 using AbaqusReader: element_boundary, element_mapping
 
 @testset "volume boundaries keep Abaqus side order" begin
