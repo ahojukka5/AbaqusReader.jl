@@ -136,31 +136,22 @@ end
 println("Surface has $(length(surface_nodes)) unique nodes")
 ```
 
-## Example 4: Downloading Test Models
+## Example 4: Example models
 
-AbaqusReader includes a helper to download example ABAQUS models:
+Example `.inp` files that ship with the package live in `testdata/`.
+Read them with the public mesh API:
 
 ```julia
 using AbaqusReader
 
-# Download an example model (downloads to current directory)
-filename = abaqus_download("piston_ring_2d")
+mesh = abaqus_read_mesh("testdata/3d_beam.inp")
 
-# Then read it
-mesh = abaqus_read_mesh(filename)
-
-# The file is now available locally for further analysis
-println("Downloaded: $filename")
 println("Nodes: ", length(mesh["nodes"]))
 println("Elements: ", length(mesh["elements"]))
 ```
 
-This is useful for:
-
-- Testing your analysis pipeline
-- Learning the package with real models
-- Benchmarking performance
-- Creating reproducible examples
+`abaqus_download` is not part of the public parser API. It remains an
+unexported helper for tests that set `ABAQUS_DOWNLOAD_URL`.
 
 ## Example 5: Mesh Statistics and Quality Checks
 
