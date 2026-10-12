@@ -1,3 +1,7 @@
+# Build context is the repository root (`docker build -f visualizer/Dockerfile`).
+# Docker reads this file from the context root, so it stays here while the
+# Dockerfile and railway.json live in visualizer/.
+
 # Don't include git metadata (except we need it for Railway's LFS handling)
 .git
 .github

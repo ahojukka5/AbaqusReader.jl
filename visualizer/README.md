@@ -39,15 +39,16 @@ Also, we wanted to prove that Julia can do web stuff, and do it well.
 ### Using Podman/Docker (Recommended)
 
 ```bash
-# Build from repository root (Dockerfile is at root as Dockerfile.visualizer)
+# Build from the repository root. The image develops the local parser
+# and needs testdata, so the context is not visualizer/ alone.
 cd /path/to/AbaqusReader.jl
-podman build -f Dockerfile.visualizer -t abaqus-visualizer .
+podman build -f visualizer/Dockerfile -t abaqus-visualizer .
 
 # Run
 podman run -p 8080:8080 abaqus-visualizer
 
 # or with Docker
-docker build -f Dockerfile.visualizer -t abaqus-visualizer .
+docker build -f visualizer/Dockerfile -t abaqus-visualizer .
 docker run -p 8080:8080 abaqus-visualizer
 ```
 
@@ -78,6 +79,18 @@ Returns `{"status": "healthy"}` if the backend is alive. Used by the frontend to
 5. **Self-documenting**: Errors link directly to GitHub issues with context
 
 ## Deployment
+
+Docker and Railway metadata live in this directory:
+
+- `visualizer/Dockerfile`
+- `visualizer/railway.json` (`dockerfilePath` is `visualizer/Dockerfile`)
+
+`dockerfilePath` and `watchPatterns` are relative to the repository root.
+Point the Railway service's config-as-code file at
+`visualizer/railway.json`, and leave the service root as the repository
+root so the image can still develop the local parser. The watch list
+includes `src/**` and `testdata/**` because this image builds those
+trees; it does not make the parser package a Railway service.
 
 The backend can run on any free-tier container hosting:
 
