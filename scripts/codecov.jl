@@ -1,6 +1,4 @@
 #!/usr/bin/env julia
-# This file is a part of JuliaFEM.
-# License is MIT: see https://github.com/ahojukka5/AbaqusReader.jl/blob/master/LICENSE
 
 """
     scripts/codecov.jl

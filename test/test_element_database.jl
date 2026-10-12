@@ -1,6 +1,3 @@
-# This file is a part of JuliaFEM.
-# License is MIT: see https://github.com/JuliaFEM/AbaqusReader.jl/blob/master/LICENSE
-
 using Test
 using AbaqusReader: load_element_database, element_has_nodes, element_has_type, ELEMENT_INFO
 

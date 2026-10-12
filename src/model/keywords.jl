@@ -1,6 +1,3 @@
-# This file is a part of JuliaFEM.
-# License is MIT: see https://github.com/JuliaFEM/AbaqusReader.jl/blob/master/LICENSE
-
 """
     parse_keyword(line; uppercase_keyword=true) -> Keyword
 

@@ -1,6 +1,3 @@
-# This file is a part of JuliaFEM.
-# License is MIT: see https://github.com/JuliaFEM/AbaqusReader.jl/blob/master/LICENSE
-
 using AbaqusReader: element_has_type, element_has_nodes, parse_abaqus,
     parse_section, abaqus_read_mesh, abaqus_parse_mesh
 
