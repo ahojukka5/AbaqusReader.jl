@@ -13,33 +13,6 @@ AbaqusReader.jl provides two distinct approaches for working with ABAQUS `.inp` 
 
 ---
 
-```@raw html
-<div style="text-align: center; margin: 2em 0; padding: 2em; background: linear-gradient(135deg, #9558B2 0%, #389826 100%); border-radius: 8px;">
-  <button onclick="document.getElementById('visualizer-container').style.display='block'; this.parentElement.style.display='none';" 
-          style="background: white; color: #9558B2; border: none; padding: 15px 40px; font-size: 18px; font-weight: bold; border-radius: 5px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-    🚀 Open Interactive Visualizer
-  </button>
-  <p style="color: white; margin-top: 10px; font-size: 14px;">
-    Drag & drop your ABAQUS .inp files • Visualize meshes in 3D • No installation required
-  </p>
-</div>
-
-<div id="visualizer-container" style="display: none; margin: 2em 0;">
-  <iframe src="assets/visualizer/index.html" 
-          style="width: 100%; height: 800px; border: 2px solid #9558B2; border-radius: 8px;" 
-          title="AbaqusReader.jl Interactive Visualizer">
-  </iframe>
-  <p style="text-align: center; margin-top: 10px;">
-    <button onclick="document.getElementById('visualizer-container').style.display='none'; document.querySelector('[onclick*=visualizer-container]').parentElement.style.display='block';" 
-            style="background: #9558B2; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
-      ✕ Close Visualizer
-    </button>
-  </p>
-</div>
-```
-
----
-
 ## Two Approaches for Two Different Needs
 
 ### 1. Mesh-Only Parsing - `abaqus_read_mesh()`
@@ -77,3 +50,14 @@ Returns a structured `Model` object containing:
 - **Keyword Coverage**: `abaqus_read_model()` handles common ABAQUS keywords but doesn't cover every possible option. It's designed for typical simulation extraction use cases.
 
 - **Element Types**: We use clean topological types (`Tri3`, `Quad4`, `Tet4`, `Hex8`) instead of ABAQUS's physics-specific nomenclature. Original names are preserved in metadata for traceability.
+
+## Optional visualizer
+
+The browser visualizer is a separate package in `visualizer/`
+(`AbaqusReaderAPI`). It is not part of `abaqus_read_mesh` or
+`abaqus_read_model`.
+
+The documentation build copies `visualizer/frontend/` into
+`assets/visualizer/`, so the existing page stays available:
+
+[Open the visualizer](assets/visualizer/index.html)

@@ -7,15 +7,6 @@
 
 ![AbaqusReader.jl - Modern FEM Mesh Parser](docs/src/assets/readme-hero.webp)
 
-## 🚀 Try the Online Visualizer!
-
-**[Launch Online Visualizer →](https://ahojukka5.github.io/AbaqusReader.jl/dev/)**
-
-Drag and drop your ABAQUS `.inp` files to see them visualized in 3D - no installation required!
-Click "Open Visualizer" button on the documentation page to access the interactive 3D viewer.
-
----
-
 AbaqusReader.jl provides two distinct ways to read ABAQUS `.inp` files, depending on your needs.
 
 **Design Philosophy**: We provide **topology** (geometry and connectivity), not **physics** (formulations and behavior). Read [our design philosophy](docs/src/philosophy.md) for why we reject ABAQUS's element proliferation and use clean topological types instead.
@@ -214,6 +205,16 @@ using AbaqusReader
 mesh = abaqus_read_mesh("testdata/3d_beam.inp")
 mesh = abaqus_read_mesh("testdata/piston_large.inp")
 ```
+
+## Optional visualizer
+
+`visualizer/` is a separate Julia package (`AbaqusReaderAPI`) with a
+Vue/Three.js page and a small HTTP API. It is not part of the parser
+export surface. Container and Railway files live next to that package;
+see `visualizer/README.md`.
+
+The documentation build still publishes the existing page:
+[visualizer](https://ahojukka5.github.io/AbaqusReader.jl/dev/assets/visualizer/index.html).
 
 [ci-img]: https://github.com/ahojukka5/AbaqusReader.jl/workflows/CI/badge.svg
 [ci-url]: https://github.com/ahojukka5/AbaqusReader.jl/actions?query=workflow%3ACI+branch%3Amaster

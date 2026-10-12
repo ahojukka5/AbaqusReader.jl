@@ -8,8 +8,10 @@ RUN apt-get update && \
 
 WORKDIR /app
 
-# Copy entire repository from build context root
-# Build this from repo root: docker build -f Dockerfile.visualizer -t abaqus-visualizer .
+# Copy the repository from the build context root. The image develops the
+# local parser and serves testdata, so the context stays the repository
+# root even though this Dockerfile lives in visualizer/:
+#   docker build -f visualizer/Dockerfile -t abaqus-visualizer .
 COPY . /app/AbaqusReader.jl
 
 WORKDIR /app/AbaqusReader.jl
