@@ -1,6 +1,6 @@
 # Examples
 
-This page demonstrates the two main ways to use AbaqusReader.jl.
+This page demonstrates how to read and write Abaqus files using AbaqusReader.jl.
 
 ## Example 1: Reading Just the Mesh
 
@@ -108,7 +108,50 @@ end
 - **Documentation**: Auto-generate simulation documentation from .inp files
 - **Solver development**: Use complete ABAQUS models as test cases for custom solvers
 
-## Example 3: Extracting Surface Elements
+## Example 3: Writing Mesh Includes
+
+When you need to export mesh geometry, sets, or surface definitions to an Abaqus `.inp` include deck:
+
+```julia
+using AbaqusReader
+
+mesh = Dict(
+    "nodes" => Dict(
+        1 => [0.0, 0.0, 0.0],
+        2 => [1.0, 0.0, 0.0],
+        3 => [0.0, 1.0, 0.0],
+        4 => [0.0, 0.0, 1.0],
+        5 => [1.0, 0.0, 1.0],
+        6 => [0.0, 1.0, 1.0],
+    ),
+    "elements" => Dict(1 => [1, 2, 3, 4, 5, 6]),
+    "element_codes" => Dict(1 => :DC3D6),
+    "node_sets" => Dict("N_BASE" => [1, 2, 3]),
+    "element_sets" => Dict("E_ALL" => [1]),
+    "surface_sets" => Dict(
+        "S_BOTTOM" => [(1, :S1)],
+        "S_TOP"    => [(1, :S2)],
+    ),
+)
+
+# Write directly to file
+abaqus_write_mesh("wedge_mesh.inp", mesh)
+
+# Or serialize to an INP string
+inp_text = abaqus_mesh_string(mesh)
+```
+
+The writer supports:
+- Keywords: `*NODE`, `*ELEMENT`, `*NSET`, `*ELSET`, and `*SURFACE, TYPE=ELEMENT`
+- Preserving original node IDs, element IDs, connectivity, sets, and surface face identifiers
+- Explicit element codes via `"element_codes"` in the mesh dictionary or the `element_code` keyword argument
+- Deterministic output ordering and full binary64 floating-point precision
+- Clean embedding via `*INCLUDE, INPUT=wedge_mesh.inp` in a parent Abaqus analysis deck
+- Node and element labels from 1 to 999999999
+- Unquoted set and surface names: a leading letter, then letters, digits,
+  underscores, or hyphens, at most 80 characters. Case-only aliases are rejected.
+
+## Example 4: Extracting Surface Elements
 
 Create explicit surface elements from volume element faces:
 
@@ -136,7 +179,7 @@ end
 println("Surface has $(length(surface_nodes)) unique nodes")
 ```
 
-## Example 4: Example models
+## Example 5: Example models
 
 Example `.inp` files that ship with the package live in `testdata/`.
 Read them with the public mesh API:
@@ -153,7 +196,7 @@ println("Elements: ", length(mesh["elements"]))
 `abaqus_download` is not part of the public parser API. It remains an
 unexported helper for tests that set `ABAQUS_DOWNLOAD_URL`.
 
-## Example 5: Mesh Statistics and Quality Checks
+## Example 6: Mesh Statistics and Quality Checks
 
 Extract useful information about your mesh:
 
@@ -198,7 +241,7 @@ println("  Y: [$(minimum(y_coords)), $(maximum(y_coords))]")
 println("  Z: [$(minimum(z_coords)), $(maximum(z_coords))]")
 ```
 
-## Example 6: Converting to Other Formats
+## Example 7: Converting to Other Formats
 
 Export mesh data to different formats for use in other tools:
 
@@ -234,7 +277,7 @@ end
 println("Exported $(length(mesh["elements"])) elements to elements.csv")
 ```
 
-## Example 7: Visualization with Makie.jl (Conceptual)
+## Example 8: Visualization with Makie.jl (Conceptual)
 
 While AbaqusReader doesn't include visualization, the mesh data can be easily visualized:
 
@@ -260,7 +303,7 @@ coords = hcat([mesh["nodes"][id] for id in node_ids]...)'
 
 **Tip:** For serious visualization, consider exporting to VTK format and using ParaView, or use Julia packages like Makie.jl or PlotlyJS.jl for interactive 3D plots.
 
-## Example 8: Working with Surface Definitions
+## Example 9: Working with Surface Definitions
 
 Extract and manipulate surface definitions for boundary conditions or loads:
 

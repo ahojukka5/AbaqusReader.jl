@@ -7,6 +7,7 @@ Returns a Dict mapping element symbols to tuples of (node_count, element_type).
 """
 function load_element_database()
     toml_path = joinpath(@__DIR__, "..", "..", "data", "abaqus_elements.toml")
+    Base.include_dependency(toml_path)
     element_data = TOML.parsefile(toml_path)
 
     # Convert to the format expected by the rest of the code

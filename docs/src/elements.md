@@ -20,6 +20,7 @@ AbaqusReader.jl supports 60+ ABAQUS element types across multiple categories. El
 | ABAQUS Element | Nodes | Generic Type | Description |
 |----------------|:-----:|--------------|-------------|
 | **C3D6** | 6 | `:Wedge6` | 6-node linear triangular prism. Use only when necessary to complete a mesh, far from critical areas. Requires fine meshing. |
+| **DC3D6** | 6 | `:Wedge6` | 6-node linear triangular prism for heat transfer analysis. 3D diffusion element. |
 | **C3D15** | 15 | `:Wedge15` | 15-node quadratic triangular prism. Better accuracy than C3D6, good for transitioning between mesh densities. |
 
 ### Hexahedral (Brick) Elements

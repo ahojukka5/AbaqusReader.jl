@@ -41,4 +41,7 @@ using Test
     @testset "test_multiple_parts" begin
         include("test_multiple_parts.jl")
     end
+    @testset "test_write_mesh" begin
+        include("test_write_mesh.jl")
+    end
 end
