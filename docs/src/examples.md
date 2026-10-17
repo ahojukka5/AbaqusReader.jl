@@ -147,6 +147,9 @@ The writer supports:
 - Explicit element codes via `"element_codes"` in the mesh dictionary or the `element_code` keyword argument
 - Deterministic output ordering and full binary64 floating-point precision
 - Clean embedding via `*INCLUDE, INPUT=wedge_mesh.inp` in a parent Abaqus analysis deck
+- Node and element labels from 1 to 999999999
+- Unquoted set and surface names: a leading letter, then letters, digits,
+  underscores, or hyphens, at most 80 characters. Case-only aliases are rejected.
 
 ## Example 4: Extracting Surface Elements
 

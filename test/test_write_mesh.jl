@@ -458,16 +458,17 @@ end
         "element_codes" => Dict(1 => :DC3D6),
     ))
 
-    # 4. Non-finite coordinate (NaN, Inf)
+    # 4. Non-finite coordinate (NaN, Inf) — use MASS (Poi1 topology, 1 node) to avoid
+    #    a node-count mismatch obscuring the real error under test
     @test_throws ArgumentError abaqus_mesh_string(Dict(
         "nodes" => Dict(1 => [NaN, 0.0, 0.0]),
         "elements" => Dict(1 => [1]),
-        "element_codes" => Dict(1 => :Poi1),
+        "element_codes" => Dict(1 => :MASS),
     ))
     @test_throws ArgumentError abaqus_mesh_string(Dict(
         "nodes" => Dict(1 => [Inf, 0.0, 0.0]),
         "elements" => Dict(1 => [1]),
-        "element_codes" => Dict(1 => :Poi1),
+        "element_codes" => Dict(1 => :MASS),
     ))
 
     # 5. Missing node reference in element
@@ -552,5 +553,406 @@ end
         "element_codes" => Dict(1 => :DC3D6),
         "surface_sets" => Dict("SURF" => [(1, :S1)]),
         "surface_types" => Dict("SURF" => :NODE),
+    ))
+
+    # 16. Node ID exceeds Abaqus maximum (999_999_999)
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => Dict(1_000_000_000 => [0.0, 0.0, 0.0]),
+        "elements" => Dict(1 => [1]),
+        "element_codes" => Dict(1 => :MASS),
+    ))
+
+    # 17. Element ID exceeds Abaqus maximum (999_999_999)
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => Dict(1 => [0.0, 0.0, 0.0]),
+        "elements" => Dict(1_000_000_000 => [1]),
+        "element_codes" => Dict(1_000_000_000 => :MASS),
+    ))
+
+    # 18. Invalid set name: begins with digit
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => valid_nodes,
+        "elements" => valid_elems,
+        "element_codes" => Dict(1 => :DC3D6),
+        "node_sets" => Dict("1BAD" => [1]),
+    ))
+
+    # 19. Invalid set name: contains comma (injection risk)
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => valid_nodes,
+        "elements" => valid_elems,
+        "element_codes" => Dict(1 => :DC3D6),
+        "node_sets" => Dict("INNER,TYPE=NODE" => [1]),
+    ))
+
+    # 20. Invalid set name: contains newline (injection risk)
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => valid_nodes,
+        "elements" => valid_elems,
+        "element_codes" => Dict(1 => :DC3D6),
+        "node_sets" => Dict("A\n*STEP" => [1]),
+    ))
+
+    # 21. Invalid set name: contains period (reserved in Abaqus part-instance notation)
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => valid_nodes,
+        "elements" => valid_elems,
+        "element_codes" => Dict(1 => :DC3D6),
+        "node_sets" => Dict("Set.1" => [1]),
+    ))
+
+    # 22. Case-insensitive duplicate node set names
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => valid_nodes,
+        "elements" => valid_elems,
+        "element_codes" => Dict(1 => :DC3D6),
+        "node_sets" => Dict("MySet" => [1], "MYSET" => [2]),
+    ))
+
+    # 23. Case-insensitive duplicate element set names
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => valid_nodes,
+        "elements" => valid_elems,
+        "element_codes" => Dict(1 => :DC3D6),
+        "element_sets" => Dict("MyElset" => [1], "MYELSET" => [1]),
+    ))
+
+    # 24. Case-insensitive duplicate surface names
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => valid_nodes,
+        "elements" => valid_elems,
+        "element_codes" => Dict(1 => :DC3D6),
+        "surface_sets" => Dict("MySurf" => [(1, :S1)], "MYSURF" => [(1, :S2)]),
+    ))
+
+    # 25. Topology with no element-based face contract fails closed
+    #     MASS is an element with topology Poi1, which has no VALID_TOPOLOGY_FACES entry
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => Dict(1 => [0.0, 0.0, 0.0]),
+        "elements" => Dict(1 => [1]),
+        "element_codes" => Dict(1 => :MASS),
+        "surface_sets" => Dict("SURF" => [(1, :S1)]),
+    ))
+
+    # 26. Mixed raw keys that normalize to the same node or element ID
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => Dict(1 => [0.0, 0.0, 0.0], "1" => [1.0, 0.0, 0.0]),
+        "elements" => Dict(1 => [1]),
+        "element_codes" => Dict(1 => :MASS),
+    ))
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => Dict(1 => [0.0, 0.0, 0.0]),
+        "elements" => Dict(1 => [1], "1" => [1]),
+        "element_codes" => Dict(1 => :MASS),
+    ))
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => Dict(1 => [0.0, 0.0, 0.0]),
+        "elements" => Dict(1 => [1]),
+        "element_codes" => Dict(1 => :MASS, "1" => :DCOUP3D),
+    ))
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => Dict(1 => [0.0, 0.0, 0.0]),
+        "elements" => Dict(1 => [1]),
+        "element_codes" => Dict(1 => :MASS),
+        "element_types" => Dict(1 => :Poi1, "1" => :Poi1),
+    ))
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => valid_nodes,
+        "elements" => valid_elems,
+    ); element_codes=Dict(1 => :DC3D6, "1" => :DC3D6))
+
+    # 27. Node ID is neither an integer nor a numeric string
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => Dict(1.5 => [0.0, 0.0, 0.0]),
+        "elements" => Dict(1 => [1]),
+        "element_codes" => Dict(1 => :MASS),
+    ))
+
+    # 28. Empty, padded, or overlong unquoted names
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => valid_nodes,
+        "elements" => valid_elems,
+        "element_codes" => Dict(1 => :DC3D6),
+        "node_sets" => Dict("" => [1]),
+    ))
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => valid_nodes,
+        "elements" => valid_elems,
+        "element_codes" => Dict(1 => :DC3D6),
+        "element_sets" => Dict(" E_ALL" => [1]),
+    ))
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => valid_nodes,
+        "elements" => valid_elems,
+        "element_codes" => Dict(1 => :DC3D6),
+        "surface_sets" => Dict("S"^81 => [(1, :S1)]),
+    ))
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => valid_nodes,
+        "elements" => valid_elems,
+        "element_codes" => Dict(1 => :DC3D6),
+        "node_sets" => Dict("A=B" => [1]),
+    ))
+
+    # 29. Set and surface values must be non-empty collections of pairs or IDs
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => valid_nodes,
+        "elements" => valid_elems,
+        "element_codes" => Dict(1 => :DC3D6),
+        "node_sets" => Dict("NSET" => 1),
+    ))
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => valid_nodes,
+        "elements" => valid_elems,
+        "element_codes" => Dict(1 => :DC3D6),
+        "element_sets" => Dict("ELSET" => 1),
+    ))
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => valid_nodes,
+        "elements" => valid_elems,
+        "element_codes" => Dict(1 => :DC3D6),
+        "surface_sets" => Dict("SURF" => 1),
+    ))
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => valid_nodes,
+        "elements" => valid_elems,
+        "element_codes" => Dict(1 => :DC3D6),
+        "node_sets" => Dict("NSET" => Int[]),
+    ))
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => valid_nodes,
+        "elements" => valid_elems,
+        "element_codes" => Dict(1 => :DC3D6),
+        "element_sets" => Dict("ELSET" => Int[]),
+    ))
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => valid_nodes,
+        "elements" => valid_elems,
+        "element_codes" => Dict(1 => :DC3D6),
+        "surface_sets" => Dict("SURF" => Tuple{Int,Symbol}[]),
+    ))
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => valid_nodes,
+        "elements" => valid_elems,
+        "element_codes" => Dict(1 => :DC3D6),
+        "surface_sets" => Dict("SURF" => [(1,)]),
+    ))
+end
+
+@testset "20-node C3D20 continuation lines and binary64 round-trip" begin
+    # C3D20 has 20 nodes which exceeds the 15-node threshold for Abaqus continuation lines.
+    # The writer must emit: element_id, nodes[1:15],  (with trailing comma)
+    #                        nodes[16:20]
+    # and the parser must reconstruct the complete connectivity.
+
+    # Corner nodes (1-8) are the unit cube. Midside nodes (9-20) sit on the
+    # edges. Node 9 uses π/4 so one coordinate is not a short decimal.
+    nodes_20 = Dict{Int,Vector{Float64}}(
+        # Corner nodes
+        1 => [0.0, 0.0, 0.0], 2 => [1.0, 0.0, 0.0],
+        3 => [1.0, 1.0, 0.0], 4 => [0.0, 1.0, 0.0],
+        5 => [0.0, 0.0, 1.0], 6 => [1.0, 0.0, 1.0],
+        7 => [1.0, 1.0, 1.0], 8 => [0.0, 1.0, 1.0],
+        # Node 9's x coordinate is π/4, which is not a short decimal.
+        9  => [π / 4, 0.0, 0.0],
+        10 => [1.0, 0.5, 0.0],
+        11 => [0.5, 1.0, 0.0],
+        12 => [0.0, 0.5, 0.0],
+        13 => [0.5, 0.0, 1.0],
+        14 => [1.0, 0.5, 1.0],
+        15 => [0.5, 1.0, 1.0],
+        16 => [0.0, 0.5, 1.0],
+        17 => [0.0, 0.0, 0.5],
+        18 => [1.0, 0.0, 0.5],
+        19 => [1.0, 1.0, 0.5],
+        20 => [0.0, 1.0, 0.5],
+    )
+    # Connectivity per Abaqus C3D20 numbering
+    conn_20 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+
+    mesh20 = Dict(
+        "nodes" => nodes_20,
+        "elements" => Dict(1 => conn_20),
+        "element_codes" => Dict(1 => :C3D20),
+        "element_sets" => Dict("SOLID" => [1]),
+    )
+
+    deck = abaqus_mesh_string(mesh20)
+
+    # Writer must produce an Abaqus-style continuation: first line ends with ","
+    # Verify the element block splits at 15 nodes
+    lines = split(deck, '\n')
+    elem_header_idx = findfirst(l -> startswith(l, "*ELEMENT, TYPE=C3D20"), lines)
+    @test elem_header_idx !== nothing
+    first_conn_line = lines[elem_header_idx + 1]
+    second_conn_line = lines[elem_header_idx + 2]
+
+    # First line must end with "," and contain exactly 16 comma-separated tokens
+    # (element_id + 15 node IDs)
+    @test endswith(first_conn_line, ",")
+    first_tokens = split(first_conn_line[1:end-1], ", ")
+    @test length(first_tokens) == 16  # eid + 15 node IDs
+
+    # Second line contains the remaining 5 node IDs
+    second_tokens = split(strip(second_conn_line), ", ")
+    @test length(second_tokens) == 5
+
+    # The full connectivity reconstructed is exactly the original
+    reconstructed = [parse(Int, t) for t in [first_tokens[2:end]; second_tokens]]
+    @test reconstructed == conn_20
+
+    # Round-trip through abaqus_parse_mesh
+    parsed = abaqus_parse_mesh(deck; verbose=false)
+
+    @test length(parsed["nodes"]) == 20
+    @test parsed["elements"][1] == conn_20
+    @test parsed["element_codes"][1] === :C3D20
+    @test parsed["element_types"][1] === :Hex20
+    @test parsed["element_sets"]["SOLID"] == [1]
+
+    # Binary64 coordinate precision: every coordinate must round-trip exactly
+    for nid in 1:20
+        @test parsed["nodes"][nid] == nodes_20[nid]
+    end
+
+    # Non-trivial binary64 test: use a value that is NOT exactly representable in
+    # decimal with fewer than 17 significant digits
+    tricky_val = 1.0 / 3.0
+    tricky_mesh = Dict(
+        "nodes" => Dict(1 => [tricky_val, 0.0, 0.0]),
+        "elements" => Dict(1 => [1]),
+        "element_codes" => Dict(1 => :MASS),  # MASS maps to Poi1 topology (1 node)
+    )
+    tricky_deck = abaqus_mesh_string(tricky_mesh)
+    tricky_parsed = abaqus_parse_mesh(tricky_deck; verbose=false)
+    @test tricky_parsed["nodes"][1][1] === tricky_val
+end
+
+@testset "element continuation repeats after sixteen node numbers" begin
+    # The element id and the first 15 nodes share a line. Later lines hold
+    # at most 16 node numbers. No registered element needs a third line, so
+    # this case turns validation off and checks the wrapper directly.
+    conn = collect(1:33)
+    mesh = Dict(
+        "nodes" => Dict(1 => [0.0, 0.0, 0.0]),
+        "elements" => Dict(1 => conn),
+        "element_codes" => Dict(1 => :C3D20),
+    )
+    deck = abaqus_mesh_string(mesh; validate=false)
+    lines = split(chomp(deck), '\n')
+    header = findfirst(l -> startswith(l, "*ELEMENT, TYPE=C3D20"), lines)
+    @test header !== nothing
+    first = lines[header + 1]
+    second = lines[header + 2]
+    third = lines[header + 3]
+    @test endswith(first, ",")
+    @test endswith(second, ",")
+    @test !endswith(third, ",")
+    ids = Int[]
+    for line in (first, second, third)
+        body = endswith(line, ",") ? line[1:end-1] : line
+        append!(ids, parse.(Int, split(body, ", ")))
+    end
+    @test ids[1] == 1
+    @test ids[2:end] == conn
+end
+
+@testset "label bounds and unquoted names that the writer accepts" begin
+    name80 = "N" * "-"^79
+    @test length(name80) == 80
+    mesh = Dict(
+        "nodes" => Dict("999999999" => [1.0 / 3.0, 0.0, 0.0]),
+        "elements" => Dict(999_999_999 => [999_999_999]),
+        "element_codes" => Dict("999999999" => :MASS),
+        "node_sets" => Dict(name80 => [999_999_999]),
+        "element_sets" => Dict("SET-A" => [999_999_999]),
+    )
+    deck = abaqus_mesh_string(mesh)
+    @test contains(deck, "*NSET, NSET=$name80")
+    @test contains(deck, "*ELSET, ELSET=SET-A")
+    parsed = abaqus_parse_mesh(deck; verbose=false)
+    @test parsed["nodes"][999_999_999][1] === 1.0 / 3.0
+    @test parsed["elements"][999_999_999] == [999_999_999]
+    @test parsed["element_codes"][999_999_999] === :MASS
+    @test parsed["node_sets"][name80] == [999_999_999]
+    @test parsed["element_sets"]["SET-A"] == [999_999_999]
+end
+
+@testset "comments keyword covers both AbstractString and vector paths" begin
+    mesh = Dict(
+        "nodes" => Dict(1 => [0.0, 0.0, 0.0], 2 => [1.0, 0.0, 0.0],
+                        3 => [0.0, 1.0, 0.0], 4 => [0.0, 0.0, 1.0],
+                        5 => [1.0, 0.0, 1.0], 6 => [0.0, 1.0, 1.0]),
+        "elements" => Dict(1 => [1, 2, 3, 4, 5, 6]),
+        "element_codes" => Dict(1 => :DC3D6),
+    )
+
+    # AbstractString path: single string with embedded newline
+    deck_str = abaqus_mesh_string(mesh; comments="Header line\nSecond line")
+    @test contains(deck_str, "** Header line\n")
+    @test contains(deck_str, "** Second line\n")
+
+    # Vector path
+    deck_vec = abaqus_mesh_string(mesh; comments=["Line A", "Line B"])
+    @test contains(deck_vec, "** Line A\n")
+    @test contains(deck_vec, "** Line B\n")
+end
+
+@testset "Pair format in surface_sets" begin
+    # Verify that Pair{Int,Symbol} entries are accepted alongside tuples
+    mesh = Dict(
+        "nodes" => Dict(1 => [0.0, 0.0, 0.0], 2 => [1.0, 0.0, 0.0],
+                        3 => [0.0, 1.0, 0.0], 4 => [0.0, 0.0, 1.0],
+                        5 => [1.0, 0.0, 1.0], 6 => [0.0, 1.0, 1.0]),
+        "elements" => Dict(1 => [1, 2, 3, 4, 5, 6]),
+        "element_codes" => Dict(1 => :DC3D6),
+        "surface_sets" => Dict("S" => [1 => :S1]),
+    )
+    deck = abaqus_mesh_string(mesh)
+    @test contains(deck, "*SURFACE, TYPE=ELEMENT, NAME=S\n1, S1")
+end
+
+@testset "Symbol key lookup in mesh fields" begin
+    # _get_mesh_field must fall back to Symbol keys
+    mesh = Dict(
+        :nodes => Dict(1 => [0.0, 0.0, 0.0], 2 => [1.0, 0.0, 0.0],
+                       3 => [0.0, 1.0, 0.0], 4 => [0.0, 0.0, 1.0],
+                       5 => [1.0, 0.0, 1.0], 6 => [0.0, 1.0, 1.0]),
+        :elements => Dict(1 => [1, 2, 3, 4, 5, 6]),
+        :element_codes => Dict(1 => :DC3D6),
+    )
+    deck = abaqus_mesh_string(mesh)
+    @test contains(deck, "*NODE")
+    @test contains(deck, "*ELEMENT, TYPE=DC3D6")
+end
+
+@testset "element_codes keyword argument path" begin
+    # Exercise the element_codes *keyword argument* override (kw_element_codes path)
+    mesh_no_codes = Dict(
+        "nodes" => Dict(1 => [0.0, 0.0, 0.0], 2 => [1.0, 0.0, 0.0],
+                        3 => [0.0, 1.0, 0.0], 4 => [0.0, 0.0, 1.0],
+                        5 => [1.0, 0.0, 1.0], 6 => [0.0, 1.0, 1.0]),
+        "elements" => Dict(1 => [1, 2, 3, 4, 5, 6]),
+        # no "element_codes" key in the mesh dict
+    )
+    # Pass codes via keyword argument
+    deck = abaqus_mesh_string(mesh_no_codes; element_codes=Dict(1 => :DC3D6))
+    @test contains(deck, "*ELEMENT, TYPE=DC3D6")
+    parsed = abaqus_parse_mesh(deck; verbose=false)
+    @test parsed["element_codes"][1] === :DC3D6
+    @test parsed["elements"][1] == [1, 2, 3, 4, 5, 6]
+end
+
+@testset "invalid surface entry format throws" begin
+    # An integer is neither a Pair, Tuple, nor AbstractVector → hits the else branch
+    valid_nodes = Dict(
+        1 => [0.0, 0.0, 0.0], 2 => [1.0, 0.0, 0.0], 3 => [0.0, 1.0, 0.0],
+        4 => [0.0, 0.0, 1.0], 5 => [1.0, 0.0, 1.0], 6 => [0.0, 1.0, 1.0],
+    )
+    @test_throws ArgumentError abaqus_mesh_string(Dict(
+        "nodes" => valid_nodes,
+        "elements" => Dict(1 => [1, 2, 3, 4, 5, 6]),
+        "element_codes" => Dict(1 => :DC3D6),
+        "surface_sets" => Dict("S" => [42]),  # 42 is an Int, not a pair
     ))
 end
