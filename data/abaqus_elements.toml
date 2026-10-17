@@ -385,6 +385,11 @@ nodes = 4
 type = "Tet4"
 description = "4-node linear tetrahedron for heat transfer analysis."
 
+[DC3D6]
+nodes = 6
+type = "Wedge6"
+description = "6-node linear triangular prism for heat transfer analysis. 3D heat transfer diffusion element."
+
 [DC3D10]
 nodes = 10
 type = "Tet10"
