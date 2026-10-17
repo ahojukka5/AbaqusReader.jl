@@ -9,6 +9,7 @@ include("mesh/utilities.jl")
 include("mesh/parsers.jl")
 include("mesh/assembly_parser.jl")
 include("mesh/reader.jl")
+include("mesh/writer.jl")
 include("mesh/create_surface_elements.jl")
 
 # Model parsing module
@@ -24,6 +25,7 @@ include("abaqus_download.jl")
 
 # Export public API
 export abaqus_read_mesh, abaqus_parse_mesh
+export abaqus_write_mesh, abaqus_mesh_string
 export abaqus_read_model, abaqus_parse_model
 export create_surface_elements
 export element_boundary
