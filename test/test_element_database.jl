@@ -17,6 +17,8 @@ using AbaqusReader: load_element_database, element_has_nodes, element_has_type, 
     @testset "element_has_nodes" begin
         # 3D solid elements
         @test element_has_nodes(:C3D4) == 4
+        @test element_has_nodes(:C3D6) == 6
+        @test element_has_nodes(:DC3D6) == 6
         @test element_has_nodes(:C3D8) == 8
         @test element_has_nodes(:C3D10) == 10
         @test element_has_nodes(:C3D20) == 20
@@ -43,6 +45,8 @@ using AbaqusReader: load_element_database, element_has_nodes, element_has_type, 
     @testset "element_has_type" begin
         # 3D solid elements
         @test element_has_type(:C3D4) == :Tet4
+        @test element_has_type(:C3D6) == :Wedge6
+        @test element_has_type(:DC3D6) == :Wedge6
         @test element_has_type(:C3D8) == :Hex8
         @test element_has_type(:C3D10) == :Tet10
         @test element_has_type(:C3D20) == :Hex20
