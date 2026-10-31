@@ -1,0 +1,74 @@
+/* Custom styling for AbaqusReader.jl documentation */
+
+/* Julia Purple accent color */
+:root {
+    --julia-purple: #9558B2;
+    --deep-blue: #2C3E50;
+    --bright-cyan: #40E0D0;
+}
+
+/* Enhanced header styling */
+.docs-sidebar .docs-logo {
+    padding: 1.5rem 0;
+}
+
+/* Add accent color to main headings */
+article h1 {
+    color: var(--julia-purple);
+    border-bottom: 2px solid var(--julia-purple);
+    padding-bottom: 0.5rem;
+}
+
+/* Style secondary headings */
+article h2 {
+    color: var(--deep-blue);
+    margin-top: 2rem;
+}
+
+/* Enhance code blocks */
+pre {
+    border-left: 3px solid var(--julia-purple);
+}
+
+/* Style links with Julia purple */
+article a {
+    color: var(--julia-purple);
+}
+
+article a:hover {
+    color: var(--bright-cyan);
+}
+
+/* Enhance admonitions */
+.admonition.is-info>.admonition-header {
+    background-color: var(--bright-cyan);
+}
+
+.admonition.is-warning>.admonition-header {
+    background-color: #f39c12;
+}
+
+/* Add visual interest to tables */
+article table {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+article table thead {
+    background-color: var(--julia-purple);
+    color: white;
+}
+
+article table tbody tr:hover {
+    background-color: rgba(149, 88, 178, 0.05);
+}
+
+/* Improve navigation sidebar */
+.docs-sidebar {
+    border-right: 2px solid rgba(149, 88, 178, 0.1);
+}
+
+/* Style the navigation menu items */
+.docs-menu a.is-active {
+    border-left: 3px solid var(--julia-purple);
+    background-color: rgba(149, 88, 178, 0.05);
+}
