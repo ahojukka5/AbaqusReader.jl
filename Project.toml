@@ -1,6 +1,6 @@
 name = "AbaqusReader"
 uuid = "bc6b9049-e460-56d6-94b4-a597b2c0390d"
-version = "0.2.7"
+version = "0.3.0"
 authors = ["Jukka Aho <ahojukka5@gmail.com>"]
 
 [deps]
