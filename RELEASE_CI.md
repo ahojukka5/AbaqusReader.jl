@@ -46,8 +46,10 @@ lockfiles are retained; no developer Manifest or shared user project is added.
 
 Jobs use fresh writable package depots plus Julia's shipped runtime resources,
 no user/project cache, one Julia/BLAS thread, at most one simultaneous leg per
-repository and a 90-minute per-leg bound. The existing trusted runner
-and credential scope are retained. Secret-backed Git helpers, when needed,
+repository and a 90-minute per-leg bound. Both jobs run on GitHub-hosted
+`ubuntu-latest` runners. The self-hosted controller refuses this public
+repository, so a `self-hosted` label stays queued. Contents permission stays
+read-only. Secret-backed Git helpers, when needed,
 are process-scoped environment configuration, not persistent runner config.
 Julia toolchain availability in the image is tracked separately; this workflow
 retains the established setup-julia selector and claims no image rollout.
