@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AbaqusReader.jl - Online Visualizer</title>
+    <!-- favicon removed; use site defaults or set a new favicon if desired -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="OrbitControls.js"></script>
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #4063D8 0%, #389826 100%);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        #app {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Logo in top-left */
+        .logo-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+        }
+
+        .logo-img {
+            width: 120px;
+            height: 120px;
+            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+            transition: transform 0.3s;
+        }
+
+        .logo-img:hover {
+            transform: scale(1.05);
+        }
+
+        /* Main viewer container */
+        .viewer-container {
+            flex: 1;
+            position: relative;
+            margin: 20px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+            background: #1a1a1a;
+        }
+
+        /* Drop zone overlay */
+        .drop-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(26, 26, 26, 0.95);
+            z-index: 10;
+            transition: background 0.3s;
+        }
+
+        .drop-overlay.dragging {
+            background: rgba(64, 99, 216, 0.2);
+        }
+
+        .drop-content {
+            text-align: center;
+            color: white;
+            max-width: 600px;
+            padding: 40px;
+        }
+
+        .drop-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+
+        .drop-content h2 {
+            font-size: 2em;
+            margin-bottom: 30px;
+            color: #4063D8;
+        }
+
+        .upload-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            transition: all 0.3s;
+        }
+
+        .upload-section:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .upload-section h3 {
+            font-size: 1.3em;
+            color: #4063D8;
+            margin-bottom: 10px;
+        }
+
+        .upload-section p {
+            font-size: 0.95em;
+            opacity: 0.7;
+            margin-bottom: 20px;
+        }
+
+        .browse-btn {
+            background: linear-gradient(135deg, #4063D8, #389826);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(64, 99, 216, 0.4);
+        }
+
+        .browse-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(64, 99, 216, 0.6);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        /* Test files section */
+        .test-files-section {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 30px;
+            transition: all 0.3s;
+        }
+
+        .test-files-section:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .test-files-section h3 {
+            font-size: 1.3em;
+            color: #389826;
+            margin-bottom: 10px;
+        }
+
+        .test-files-section p {
+            font-size: 0.95em;
+            opacity: 0.7;
+            margin-bottom: 20px;
+        }
+
+        .or-divider {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 1.1em;
+            margin: 30px 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .or-divider::before,
+        .or-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        }
+
+        .test-file-select {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 1em;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+        }
+
+        .test-file-select:hover {
+            background: rgba(255, 255, 255, 0.25);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .test-file-select:focus {
+            outline: none;
+            border-color: #4063D8;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .test-file-select option {
+            background: #1a1a1a;
+            color: white;
+            padding: 10px;
+        }
+
+        /* Info card in bottom-left */
+        .info-card {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            z-index: 20;
+            transition: transform 0.3s, opacity 0.3s;
+        }
+
+        .info-card.collapsed {
+            transform: translateX(calc(-100% + 50px));
+        }
+
+        .info-card.collapsed .info-card-header h3 {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .info-card-header {
+            padding: 20px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .info-card-header h3 {
+            color: #4063D8;
+            font-size: 1.2em;
+            margin: 0;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .collapse-btn {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #666;
+            transition: transform 0.3s;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .info-card.collapsed .collapse-btn {
+            transform: rotate(180deg);
+        }
+
+        .why-dialog {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            cursor: pointer;
+        }
+
+        .why-content {
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            text-align: center;
+            cursor: default;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .why-btn {
+            background: none;
+            border: 2px solid #9558B2;
+            color: #9558B2;
+            padding: 5px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-left: 10px;
+            transition: all 0.3s;
+        }
+
+        .why-btn:hover {
+            background: #9558B2;
+            color: white;
+        }
+
+        .info-card-body {
+            padding: 20px;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .info-card.collapsed .info-card-body {
+            display: none;
+        }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #4063D8;
+        }
+
+        .display-toggles {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            min-width: 85px;
+            padding: 10px 16px;
+            background: rgba(50, 50, 50, 0.5);
+            color: rgba(255, 255, 255, 0.7);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 6px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .toggle-btn:hover {
+            background: rgba(149, 88, 178, 0.3);
+            border-color: rgba(149, 88, 178, 0.6);
+            color: white;
+        }
+
+        .toggle-btn.active {
+            background: #9558B2;
+            color: white;
+            border-color: #9558B2;
+        }
+
+        .info-section {
+            margin-bottom: 20px;
+        }
+
+        .info-section h4 {
+            color: #389826;
+            margin-bottom: 10px;
+            font-size: 1em;
+        }
+
+        .info-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .info-list li {
+            background: #f8f9ff;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #4063D8, #389826);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            margin-left: 8px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4063D8, #389826);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            width: 100%;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(64, 99, 216, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(64, 99, 216, 0.5);
+        }
+
+        /* Loading spinner */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(26, 26, 26, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 15;
+            color: white;
+        }
+
+        /* Initial loading dialog */
+        .initial-loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(10, 10, 10, 0.95);
+            border: 2px solid rgba(64, 99, 216, 0.5);
+            border-radius: 15px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            color: white;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            min-width: 400px;
+        }
+
+        .loading-logo {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 20px;
+            animation: spin 3s linear infinite;
+        }
+
+        .loading-progress {
+            width: 100%;
+            max-width: 350px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+
+        .loading-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4063D8, #389826);
+            transition: width 0.3s ease;
+        }
+
+        .loading-text {
+            font-size: 1.1em;
+            margin: 5px 0;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .loading-subtext {
+            font-size: 0.85em;
+            opacity: 0.7;
+            text-align: center;
+            max-width: 350px;
+            line-height: 1.4;
+            padding: 0 10px;
+        }
+
+        .loading-warning {
+            margin-top: 15px;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            max-width: 350px;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #4063D8;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Error message */
+        .error-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            z-index: 16;
+        }
+
+        .error-overlay h3 {
+            color: #CB3C33;
+            margin-bottom: 15px;
+        }
+
+        .error-details {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.9em;
+            max-height: 200px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+
+        /* Connection status */
+        .connection-status {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px 20px;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            transition: opacity 1s ease-out;
+        }
+
+        .connection-status.fading {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Floating Why button */
+        .floating-why-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #9558B2 0%, #389826 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(149, 88, 178, 0.3);
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 1s ease-in, transform 0.2s;
+            pointer-events: none;
+        }
+
+        .floating-why-btn.visible {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .floating-why-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(149, 88, 178, 0.4);
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.connected {
+            background: #389826;
+        }
+
+        .status-dot.disconnected {
+            background: #CB3C33;
+            animation: none;
+        }
+
+        .status-dot.checking {
+            background: #4063D8;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app" v-cloak>
+        <!-- Initial Loading Dialog -->
+        <div v-show="initialLoading" class="initial-loading">
+            <img src="logo.svg" alt="AbaqusReader.jl" class="loading-logo">
+            <div class="loading-text">Starting up...</div>
+            <div class="loading-progress">
+                <div class="loading-progress-bar" :style="{ width: loadingProgress + '%' }"></div>
+            </div>
+            <div class="loading-subtext">{{ loadingMessage }}</div>
+            <div v-show="showSlowWarning" class="loading-warning" style="display: none;">
+                ⏱️ The backend is waking up (free hosting on Railway.app)<br>
+                This is a hobby project. If you're in a rush, consider:<br>
+                • Contributing financially to upgrade hosting<br>
+                • Or just wait patiently (~30 seconds max) 😊
+            </div>
+        </div>
+
+        <!-- Logo -->
+        <div class="logo-container">
+            <img src="logo.svg" alt="AbaqusReader.jl" class="logo-img">
+        </div>
+
+        <!-- Connection Status -->
+        <div v-show="!statusHidden" v-cloak class="connection-status" :class="{ fading: statusFading }">
+            <div class="status-dot"
+                :class="{ connected: connected && !checking, disconnected: !connected && !checking, checking: checking }">
+            </div>
+            <span v-if="checking">Checking...</span>
+            <span v-else-if="connected">Connected</span>
+            <span v-else>Disconnected</span>
+        </div>
+
+        <!-- Floating Why Button -->
+        <button v-cloak class="floating-why-btn" :class="{ visible: showWhyButton }" @click="showWhy = true">
+            Why? 😎
+        </button>
+
+        <!-- Main viewer container -->
+        <div class="viewer-container">
+            <div id="canvas-container" ref="canvasContainer"></div>
+
+            <!-- Drop zone overlay (shown when no mesh loaded) -->
+            <div v-if="!meshData && !loading" class="drop-overlay" :class="{ dragging: dragging }"
+                @dragover.prevent="dragging = true" @dragleave="dragging = false" @drop.prevent="handleDrop">
+                <div class="drop-content">
+                    <div class="drop-icon">📦</div>
+                    <h2>ABAQUS Mesh Visualizer</h2>
+
+                    <!-- Upload your own file section -->
+                    <div class="upload-section">
+                        <h3>📁 Load Your Own File</h3>
+                        <p>Upload your ABAQUS .inp file to visualize</p>
+                        <button class="browse-btn" @click="$refs.fileInput.click()">Browse Files</button>
+                        <input ref="fileInput" type="file" class="file-input" accept=".inp" @change="handleFileSelect">
+                    </div>
+
+                    <!-- Or divider -->
+                    <div v-if="testFiles.length > 0" class="or-divider">
+                        <span>OR</span>
+                    </div>
+
+                    <!-- Test models dropdown -->
+                    <div v-if="testFiles.length > 0" class="test-files-section">
+                        <h3>🎯 Try a Demo Model</h3>
+                        <p>Select a predefined model to see how the parser works</p>
+                        <select v-model="selectedTestFile" @change="loadTestFile" class="test-file-select">
+                            <option value="">Select a demo model...</option>
+                            <option v-for="file in testFiles" :key="file.name" :value="file.name">
+                                {{ formatTestFileName(file.name) }} ({{ file.size_formatted }})
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading overlay -->
+            <div v-if="loading" class="loading-overlay">
+                <div class="spinner"></div>
+                <div style="font-size: 1.2em;">Parsing ABAQUS file...</div>
+                <div style="opacity: 0.7; margin-top: 10px;">{{ fileName }}</div>
+            </div>
+
+            <!-- Error overlay -->
+            <div v-if="error" v-cloak class="error-overlay">
+                <h3>⚠️ Parsing Error</h3>
+                <p>{{ error }}</p>
+                <div class="error-details" v-if="errorDetails">{{ errorDetails }}</div>
+                <button class="btn" @click="reportIssue" style="margin-bottom: 10px;">
+                    Report Issue on GitHub
+                </button>
+                <button class="btn" @click="reset" style="background: #e0e0e0; color: #333; box-shadow: none;">
+                    Try Another File
+                </button>
+            </div>
+
+            <!-- Info card (shown when mesh is loaded) -->
+            <div v-if="meshData && !loading" v-cloak class="info-card" :class="{ collapsed: infoCollapsed }">
+                <div class="info-card-header" @click="infoCollapsed = !infoCollapsed">
+                    <h3>📊 {{ fileName }}</h3>
+                    <button class="collapse-btn">◀</button>
+                </div>
+                <div class="info-card-body">
+                    <div class="stat-grid">
+                        <div class="stat-item">
+                            <div class="stat-label">Nodes</div>
+                            <div class="stat-value">{{ meshData.stats.num_nodes }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Elements</div>
+                            <div class="stat-value">{{ meshData.stats.num_elements }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Element Sets</div>
+                            <div class="stat-value">{{ meshData.stats.num_element_sets }}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Node Sets</div>
+                            <div class="stat-value">{{ meshData.stats.num_node_sets }}</div>
+                        </div>
+                    </div>
+
+                    <div class="info-section">
+                        <h4>👁️ Display</h4>
+                        <div class="display-toggles">
+                            <button 
+                                class="toggle-btn" 
+                                :class="{ active: showSolid }"
+                                @click="showSolid = !showSolid; updateDisplayMode()">
+                                Solid
+                            </button>
+                            <button 
+                                class="toggle-btn" 
+                                :class="{ active: showWireframe }"
+                                @click="showWireframe = !showWireframe; updateDisplayMode()">
+                                Wireframe
+                            </button>
+                            <button 
+                                class="toggle-btn" 
+                                :class="{ active: showPoints }"
+                                @click="showPoints = !showPoints; updateDisplayMode()">
+                                Points
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="info-section" v-if="meshData.has_parts && meshData.part_names.length > 0">
+                        <h4>📦 Parts</h4>
+                        <ul class="info-list">
+                            <li v-for="part in meshData.part_names" :key="part">{{ part }}</li>
+                        </ul>
+                    </div>
+
+                    <div class="info-section" v-if="modelData">
+                        <h4>🔬 Model</h4>
+                        <div class="stat-grid">
+                            <div class="stat-item">
+                                <div class="stat-label">Materials</div>
+                                <div class="stat-value">{{ modelData.stats.num_materials }}</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Steps</div>
+                                <div class="stat-value">{{ modelData.stats.num_steps }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn" @click="reset">Load Another File</button>
+                </div>
+            </div>
+
+            <!-- "Why?" dialog -->
+            <div v-show="showWhy" class="why-dialog" style="display: none;" @click="showWhy = false">
+                <div class="why-content" @click.stop>
+                    <div style="font-size: 120px; margin-bottom: 20px;">😎</div>
+                    <h1 style="font-size: 48px; color: #9558B2; margin-bottom: 20px; font-weight: bold;">
+                        BECAUSE WE CAN
+                    </h1>
+                    <p style="font-size: 18px; color: #666; margin-bottom: 30px;">
+                        Building awesome features for hobby projects.<br>
+                        No reason needed. Just pure engineering joy.
+                    </p>
+                    <button class="btn" @click="showWhy = false" style="background: #9558B2;">Got it! 💪</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js?v=27"></script>
+</body>
+
+</html>
