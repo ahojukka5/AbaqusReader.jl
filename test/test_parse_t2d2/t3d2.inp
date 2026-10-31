@@ -1,0 +1,11 @@
+*HEADING
+Pinned three-dimensional truss. The third coordinate distinguishes T3D2 from T2D2.
+*NODE
+1, 5.0, 10.0, 1.0
+2, 10.0, 10.0, 2.0
+3, 15.0, 10.0, 3.0
+4, 10.0, 0.0, 0.0
+*ELEMENT, TYPE=T3D2, ELSET=EALL
+1, 4, 1
+2, 4, 2
+3, 4, 3
