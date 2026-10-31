@@ -301,3 +301,6 @@ The documentation build still publishes the existing page:
 
 [docs-dev-img]: https://img.shields.io/badge/docs-latest-blue.svg
 [docs-dev-url]: https://ahojukka5.github.io/AbaqusReader.jl/latest
+
+Julia release compatibility is checked by the manual/tag-triggered
+[Release CI](RELEASE_CI.md) across LTS, intervening minors and stable.

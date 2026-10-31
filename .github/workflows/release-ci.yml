@@ -1,0 +1,205 @@
+name: Release CI
+run-name: Release qualification of ${{ inputs.source_ref || github.ref_name }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: "Source tag, branch or SHA to qualify (empty uses this workflow's commit)"
+        required: false
+        type: string
+  push:
+    tags: ['v[0-9]*.[0-9]*.[0-9]*']
+
+permissions:
+  contents: read
+
+jobs:
+  source:
+    name: Freeze qualification source
+    runs-on: self-hosted
+    timeout-minutes: 5
+    outputs:
+      sha: ${{ steps.freeze.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.source_ref || github.sha }}
+          persist-credentials: false
+      - name: Resolve the source once for every matrix leg
+        id: freeze
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "RELEASE_SOURCE commit=$(git rev-parse HEAD) tree=$(git rev-parse 'HEAD^{tree}')"
+  compatibility:
+    name: "release: ${{ matrix.package.name }} / Julia ${{ matrix.julia }}"
+    needs: source
+    runs-on: self-hosted
+    timeout-minutes: 90
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        # Current LTS, intervening minors, declared minimum, latest stable.
+        # Review this list when Julia's LTS/stable or our minimum changes.
+        julia: ["lts", "1.11", "1.12", "1"]
+        package:
+          - name: AbaqusReader
+            path: "."
+    defaults:
+      run:
+        working-directory: ${{ matrix.package.path }}
+    env:
+      PACKAGE_PATH: ${{ matrix.package.path }}
+      JULIA_NUM_PRECOMPILE_TASKS: '1'
+      JULIA_PKG_USE_CLI_GIT: 'true'
+      JULIA_LOAD_PATH: '@:@stdlib'
+      JULIA_PKG_PRECOMPILE_AUTO: '0'
+      JULIA_NUM_THREADS: '1'
+      OPENBLAS_NUM_THREADS: '1'
+      GH_TOKEN: ${{ github.token }}
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        id: source
+        with:
+          ref: ${{ needs.source.outputs.sha }}
+          persist-credentials: false
+      - name: Isolate the Julia depot
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "JULIA_DEPOT_PATH=$RUNNER_TEMP/oodi-release-depot" >> "$GITHUB_ENV"
+      - uses: julia-actions/setup-julia@v2
+        id: julia
+        with:
+          version: ${{ matrix.julia }}
+      - name: Record exact source and Julia identity
+        id: identity
+        env:
+          REQUESTED_REF: ${{ inputs.source_ref || github.ref_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test ! -e "$JULIA_DEPOT_PATH"
+          test ! -e "$RUNNER_TEMP/oodi-release-consumer"
+          runtime_depot="$(julia --startup-file=no -e 'print(normpath(Sys.BINDIR, "..", "share", "julia"))')"
+          export JULIA_DEPOT_PATH="$JULIA_DEPOT_PATH:$runtime_depot"
+          echo "JULIA_DEPOT_PATH=$JULIA_DEPOT_PATH" >> "$GITHUB_ENV"
+          echo "RELEASE_SOURCE commit=$(git rev-parse HEAD) tree=$(git rev-parse 'HEAD^{tree}')"
+          julia --startup-file=no -e '
+            using TOML
+            project = TOML.parsefile("Project.toml")
+            println("RELEASE_IDENTITY julia=", VERSION,
+                    " package=", project["name"], " version=", project["version"],
+                    " julia_compat=", project["compat"]["julia"])
+            requested = ENV["REQUESTED_REF"]
+            if ENV["PACKAGE_PATH"] == "." && occursin(r"^v[0-9]+\.[0-9]+\.[0-9]+(?:[-+].*)?$", requested)
+                @assert VersionNumber(requested[2:end]) == VersionNumber(project["version"])
+            end
+          '
+          julia --startup-file=no -e 'using InteractiveUtils; versioninfo()'
+      - name: Check declared Julia compatibility
+        id: compat
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          julia --startup-file=no -e '
+            using Pkg
+            # Develop/test may permit an incompatible root project. Check
+            # its bound explicitly using the installed Pkg version parser.
+            compat = Pkg.Types.read_project("Project.toml").compat["julia"].val
+            VERSION in compat || error("RELEASE_JULIA_COMPAT_FAIL runtime=", VERSION,
+                                       " declared=", compat)
+            println("RELEASE_JULIA_COMPAT_PASS runtime=", VERSION, " declared=", compat)
+          '
+      - name: Prepare clean dependency registries
+        id: registries
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          julia --startup-file=no -e '
+            using Pkg
+            @assert all(!isfile(joinpath(d, "artifacts", "Overrides.toml")) for d in DEPOT_PATH)
+            Pkg.Registry.add("General")
+            Pkg.Registry.add(Pkg.RegistrySpec(url="https://github.com/ahojukka5/OodiRegistry.git"))
+          '
+      - name: Check clean consumer installation and loading
+        id: install
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'CI_PHASE_START phase=consumer-install'
+          phase_started=$SECONDS
+          phase_status=0
+          julia --startup-file=no -e '
+              using Pkg
+              source = pwd()
+              Pkg.activate(joinpath(ENV["RUNNER_TEMP"], "oodi-release-consumer"))
+              Pkg.develop(PackageSpec(path=source))
+              Pkg.instantiate()
+              Pkg.status(; mode=Pkg.PKGMODE_MANIFEST)
+              package = Pkg.Types.read_project(joinpath(source, "Project.toml"))
+              loaded = Base.require(Base.PkgId(package.uuid, package.name))
+              @assert realpath(pkgdir(loaded)) == realpath(source)
+              println("RELEASE_CONSUMER_PASS julia=", VERSION,
+                      " package_version=", Base.pkgversion(loaded))
+            ' || phase_status=$?
+          printf 'CI_TIMING phase=consumer-install elapsed_s=%s exit=%s\n' \
+            "$((SECONDS - phase_started))" "$phase_status"
+          exit "$phase_status"
+      - name: Run complete unmodified package tests
+        id: tests
+        if: ${{ !cancelled() && steps.identity.outcome == 'success' }}
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo 'CI_PHASE_START phase=package-tests'
+          phase_started=$SECONDS
+          phase_status=0
+          julia --startup-file=no --project=. -e '
+              using Pkg
+              Pkg.test()
+            ' || phase_status=$?
+          printf 'CI_TIMING phase=package-tests elapsed_s=%s exit=%s\n' \
+            "$((SECONDS - phase_started))" "$phase_status"
+          exit "$phase_status"
+      - name: Report release qualification without hiding failures
+        if: always()
+        env:
+          JULIA_REQUEST: ${{ matrix.julia }}
+          SOURCE_OUTCOME: ${{ steps.source.outcome }}
+          JULIA_OUTCOME: ${{ steps.julia.outcome }}
+          IDENTITY_OUTCOME: ${{ steps.identity.outcome }}
+          REGISTRY_OUTCOME: ${{ steps.registries.outcome }}
+          COMPAT_OUTCOME: ${{ steps.compat.outcome }}
+          INSTALL_OUTCOME: ${{ steps.install.outcome }}
+          TEST_OUTCOME: ${{ steps.tests.outcome }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "### Julia $JULIA_REQUEST"
+            echo "| Check | Outcome |"
+            echo "| --- | --- |"
+            echo "| Checkout | $SOURCE_OUTCOME |"
+            echo "| Julia setup | $JULIA_OUTCOME |"
+            echo "| Source/runtime identity | $IDENTITY_OUTCOME |"
+            echo "| Registry/private dependency setup | $REGISTRY_OUTCOME |"
+            echo "| Declared Julia compatibility | $COMPAT_OUTCOME |"
+            echo "| Clean consumer install/load | $INSTALL_OUTCOME |"
+            echo "| Complete Pkg.test | $TEST_OUTCOME |"
+          } >> "$GITHUB_STEP_SUMMARY"
+          test "$SOURCE_OUTCOME" = success
+          test "$JULIA_OUTCOME" = success
+          test "$IDENTITY_OUTCOME" = success
+          test "$REGISTRY_OUTCOME" = success
+          test "$COMPAT_OUTCOME" = success
+          test "$INSTALL_OUTCOME" = success
+          test "$TEST_OUTCOME" = success
